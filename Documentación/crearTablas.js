@@ -1,3 +1,4 @@
+//Comentario aleatorio
 /**
  * db.js
  * Configuración y creación de la base de datos SQLite para el gestor de salud y comidas.
