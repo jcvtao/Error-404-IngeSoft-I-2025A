@@ -8,22 +8,22 @@ const db = new Database(dbPath);
 // Crear tablas
 db.prepare(`
     CREATE TABLE IF NOT EXISTS usuarios (
-        usuario_id TEXT PRIMARY KEY,
-        nombre TEXT NOT NULL,
-        sexo TEXT,
+        usuario_id INTEGER PRIMARY KEY,
+        nombre VARCHAR NOT NULL,
+        sexo VARCHAR,
         edad INTEGER,
-        username TEXT UNIQUE NOT NULL,
+        username VARCHAR UNIQUE NOT NULL,
         peso REAL NOT NULL,
         altura REAL NOT NULL,
-        objetivo TEXT NOT NULL,
+        objetivo VARCHAR NOT NULL,
         fecha_registro DATE
     )
 `).run();
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS valor_nutricional (
-        alimento_id TEXT PRIMARY KEY,
-        nombre_alimento TEXT NOT NULL,
+        alimento_id INTEGER PRIMARY KEY,
+        nombre_alimento VARCHAR NOT NULL,
         calorias REAL NOT NULL,
         proteinas REAL,
         grasas REAL,
@@ -33,9 +33,9 @@ db.prepare(`
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS comidas (
-        id TEXT PRIMARY KEY,
-        usuario_id TEXT NOT NULL,
-        alimento_id TEXT NOT NULL,
+        id INTEGER PRIMARY KEY,
+        usuario_id INTEGER NOT NULL,
+        alimento_id INTEGER NOT NULL,
         cantidad REAL NOT NULL,
         fecha DATETIME,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id),
@@ -45,34 +45,34 @@ db.prepare(`
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS historial_peso (
-        id TEXT PRIMARY KEY,
-        usuario_id TEXT NOT NULL,
+        id INTEGER PRIMARY KEY,
+        usuario_id INTEGER NOT NULL,
         cantidad_registros INTEGER,
         peso REAL NOT NULL,
         imc REAL,
-        fecha DATE,
+        fecha DATETIME,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id)
     )
 `).run();
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS actividad_fisica (
-        id TEXT PRIMARY KEY,
-        usuario_id TEXT,
-        tiempo DATETIME,
-        fecha_registro DATE,
-        intensidad TEXT,
+        id INTEGER PRIMARY KEY,
+        usuario_id INTEGER,
+        tiempo VARCHAR,
+        fecha_registro DATETIME,
+        intensidad VARCHAR,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id)
     )
 `).run();
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS objetivos (
-        id TEXT PRIMARY KEY,
-        usuario_id TEXT,
-        objetivo TEXT,
+        id INTEGER PRIMARY KEY,
+        usuario_id INTEGER,
+        objetivo VARCHAR,
         peso_meta REAL,
-        calorias_meta TEXT,
+        calorias_meta VARCHAR,
         fecha_inicio DATE,
         fecha_objetivo DATE,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id)
@@ -81,17 +81,24 @@ db.prepare(`
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS favoritos (
-        id TEXT PRIMARY KEY,
-        usuario_id TEXT,
-        alimento_id TEXT,
-        fecha_registro DATE,
+        id INTEGER PRIMARY KEY,
+        usuario_id INTEGER,
+        alimento_id INTEGER,
+        fecha_registro DATETIME,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id),
         FOREIGN KEY(alimento_id) REFERENCES valor_nutricional(alimento_id)
     )
 `).run();
 
-// Datos simulados
+// Verificar si ya hay datos
+const existeUsuario = db.prepare(`SELECT COUNT(*) AS count FROM usuarios`).get().count;
+if (existeUsuario > 0) {
+    console.log('ℹ️  La base de datos ya está inicializada. No se insertan datos.');
+    module.exports = db;
+    return;
+}
 
+// Insertar datos simulados
 const usuarios = Array.from({ length: 10 }, (_, i) => ({
     usuario_id: `${i + 1}`,
     nombre: `Usuario${i + 1}`,
@@ -230,10 +237,5 @@ function guardarEsquemaSQL() {
 guardarEsquemaSQL();
 
 console.log('✅ Tablas creadas e información insertada correctamente.');
-
-module.exports = db;
-
-`);
-historial.forEach(h => insertHistorial.run(h));
 
 module.exports = db;
