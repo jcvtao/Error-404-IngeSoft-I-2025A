@@ -1,6 +1,13 @@
-# ignore ALL .log files
+# Node
+node_modules/
+dist/
+
+# SQLite database
+electron/data/*.db
+
+# Logs y sistema
 *.log
+.DS_Store
 
 # ignore ALL files in ANY directory named temp and ALL .temp files
 temp/
-*.temp
