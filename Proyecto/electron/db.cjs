@@ -86,7 +86,7 @@ const existeUsuario = db.prepare(`SELECT COUNT(*) AS count FROM usuarios`).get()
 if (existeUsuario > 0) {
     console.log('ℹ️  La base de datos ya está inicializada. No se insertan datos.');
     module.exports = db;
-    return 0;
+    process.exit(0);
 }
 
 // Insertar datos simulados
