@@ -8,85 +8,76 @@ const db = new Database(dbPath);
 // Crear tablas
 db.prepare(`
     CREATE TABLE IF NOT EXISTS usuarios (
-        usuario_id INTEGER PRIMARY KEY,
+        usuario_id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre VARCHAR NOT NULL,
-        sexo VARCHAR,
-        edad INTEGER,
+        sexo VARCHAR NOT NULL,
+        edad INTEGER NOT NULL,
         username VARCHAR UNIQUE NOT NULL,
+        password VARCHAR NOT NULL,
         peso REAL NOT NULL,
         altura REAL NOT NULL,
         objetivo VARCHAR NOT NULL,
-        fecha_registro DATE
+        intensidad VARCHAR NOT NULL,
+        fecha_registro DATE NOT NULL
     )
 `).run();
 
 db.prepare(`
-    CREATE TABLE IF NOT EXISTS valor_nutricional (
-        alimento_id INTEGER PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS alimento (
+        alimento_id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre_alimento VARCHAR NOT NULL,
-        calorias REAL NOT NULL,
-        proteinas REAL,
-        grasas REAL,
-        carbohidratos REAL
+        gramos REAL NOT NULL,
+        calorias REAL NOT NULL
     )
 `).run();
 
 db.prepare(`
-    CREATE TABLE IF NOT EXISTS comidas (
-        id INTEGER PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS registro_dieta (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         usuario_id INTEGER NOT NULL,
         alimento_id INTEGER NOT NULL,
         cantidad REAL NOT NULL,
-        fecha DATETIME,
+        calorias REAL NOT NULL,
+        tiempo_registro DATETIME NOT NULL,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id),
-        FOREIGN KEY(alimento_id) REFERENCES valor_nutricional(alimento_id)
+        FOREIGN KEY(alimento_id) REFERENCES alimento(alimento_id)
     )
 `).run();
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS historial_peso (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         usuario_id INTEGER NOT NULL,
-        cantidad_registros INTEGER,
+        numero_registros INTEGER NOT NULL,
         peso REAL NOT NULL,
-        imc REAL,
-        fecha DATETIME,
-        FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id)
-    )
-`).run();
-
-db.prepare(`
-    CREATE TABLE IF NOT EXISTS actividad_fisica (
-        id INTEGER PRIMARY KEY,
-        usuario_id INTEGER,
-        tiempo VARCHAR,
-        fecha_registro DATETIME,
-        intensidad VARCHAR,
+        imc REAL NOT NULL,
+        tiempo_registro DATETIME NOT NULL,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id)
     )
 `).run();
 
 db.prepare(`
     CREATE TABLE IF NOT EXISTS objetivos (
-        id INTEGER PRIMARY KEY,
-        usuario_id INTEGER,
-        objetivo VARCHAR,
-        peso_meta REAL,
-        calorias_meta VARCHAR,
-        fecha_inicio DATE,
-        fecha_objetivo DATE,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER NOT NULL,
+        numero_objetivo INTEGER NOT NULL,
+        objetivo VARCHAR NOT NULL,
+        peso_meta REAL NOT NULL,
+        calorias_meta VARCHAR NOT NULL,
+        fecha_inicio DATE NOT NULL,
+        fecha_objetivo DATE NOT NULL,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id)
     )
 `).run();
 
 db.prepare(`
-    CREATE TABLE IF NOT EXISTS favoritos (
-        id INTEGER PRIMARY KEY,
-        usuario_id INTEGER,
-        alimento_id INTEGER,
-        fecha_registro DATETIME,
+    CREATE TABLE IF NOT EXISTS alimentos_favoritos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER NOT NULL,
+        alimento_id INTEGER NOT NULL,
+        fecha_registro DATETIME NOT NULL,
         FOREIGN KEY(usuario_id) REFERENCES usuarios(usuario_id),
-        FOREIGN KEY(alimento_id) REFERENCES valor_nutricional(alimento_id)
+        FOREIGN KEY(alimento_id) REFERENCES alimento(alimento_id)
     )
 `).run();
 
@@ -100,98 +91,87 @@ if (existeUsuario > 0) {
 
 // Insertar datos simulados
 const usuarios = Array.from({ length: 10 }, (_, i) => ({
-    usuario_id: `${i + 1}`,
     nombre: `Usuario${i + 1}`,
     sexo: i % 2 === 0 ? 'Masculino' : 'Femenino',
     edad: 20 + i,
     username: `user${i + 1}`,
+    password: `pass${i + 1}`,
     peso: 60 + i * 2,
     altura: 1.60 + i * 0.01,
     objetivo: i % 3 === 0 ? 'perder' : i % 3 === 1 ? 'mantener' : 'ganar',
+    intensidad: ['Baja', 'Moderada', 'Alta'][i % 3],
     fecha_registro: `2025-06-${10 + i}`
 }));
 
 const alimentos = Array.from({ length: 10 }, (_, i) => ({
-    alimento_id: `${i + 1}`,
     nombre_alimento: `Alimento${i + 1}`,
-    calorias: 50 + i * 10,
-    proteinas: 1 + i * 0.5,
-    grasas: 0.5 + i * 0.3,
-    carbohidratos: 5 + i * 2
+    gramos: 100,
+    calorias: 50 + i * 10
 }));
 
 const insertUsuario = db.prepare(`
-    INSERT INTO usuarios (usuario_id, nombre, sexo, edad, username, peso, altura, objetivo, fecha_registro)
-    VALUES (@usuario_id, @nombre, @sexo, @edad, @username, @peso, @altura, @objetivo, @fecha_registro)
+    INSERT INTO usuarios (
+        nombre, sexo, edad, username, password, peso, altura, objetivo, intensidad, fecha_registro
+    ) VALUES (
+        @nombre, @sexo, @edad, @username, @password, @peso, @altura, @objetivo, @intensidad, @fecha_registro
+    )
 `);
 
 const insertAlimento = db.prepare(`
-    INSERT INTO valor_nutricional (alimento_id, nombre_alimento, calorias, proteinas, grasas, carbohidratos)
-    VALUES (@alimento_id, @nombre_alimento, @calorias, @proteinas, @grasas, @carbohidratos)
+    INSERT INTO alimento (nombre_alimento, gramos, calorias)
+    VALUES (@nombre_alimento, @gramos, @calorias)
 `);
 
 usuarios.forEach(u => insertUsuario.run(u));
 alimentos.forEach(a => insertAlimento.run(a));
 
-// Insertar comidas
+const usuariosDB = db.prepare(`SELECT usuario_id, peso, altura, objetivo FROM usuarios`).all();
+const alimentosDB = db.prepare(`SELECT alimento_id, calorias FROM alimento`).all();
+
+// Insertar registro_dieta
 const insertComida = db.prepare(`
-    INSERT INTO comidas (id, usuario_id, alimento_id, cantidad, fecha)
-    VALUES (@id, @usuario_id, @alimento_id, @cantidad, @fecha)
+    INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, tiempo_registro)
+    VALUES (@usuario_id, @alimento_id, @cantidad, @calorias, @tiempo_registro)
 `);
 for (let i = 0; i < 10; i++) {
+    const alimento = alimentosDB[i % alimentosDB.length];
     insertComida.run({
-        id: `${i + 1}`,
-        usuario_id: `${(i % usuarios.length) + 1}`,
-        alimento_id: `${(i % alimentos.length) + 1}`,
+        usuario_id: usuariosDB[i % usuariosDB.length].usuario_id,
+        alimento_id: alimento.alimento_id,
         cantidad: 1 + i * 0.5,
-        fecha: `2025-06-${10 + i}`
+        calorias: alimento.calorias,
+        tiempo_registro: `2025-06-${10 + i}`
     });
 }
 
 // Insertar historial_peso
 const insertHistorial = db.prepare(`
-    INSERT INTO historial_peso (id, usuario_id, cantidad_registros, peso, imc, fecha)
-    VALUES (@id, @usuario_id, @cantidad_registros, @peso, @imc, @fecha)
+    INSERT INTO historial_peso (usuario_id, numero_registros, peso, imc, tiempo_registro)
+    VALUES (@usuario_id, @numero_registros, @peso, @imc, @tiempo_registro)
 `);
 for (let i = 0; i < 10; i++) {
-    const usuario = usuarios[i % usuarios.length];
+    const usuario = usuariosDB[i % usuariosDB.length];
     const peso = usuario.peso + i * 0.5;
     const imc = peso / (usuario.altura * usuario.altura);
     insertHistorial.run({
-        id: `${i + 1}`,
         usuario_id: usuario.usuario_id,
-        cantidad_registros: i + 1,
+        numero_registros: i + 1,
         peso,
         imc: parseFloat(imc.toFixed(2)),
-        fecha: `2025-06-${11 + i}`
-    });
-}
-
-// Insertar actividad física
-const insertActividad = db.prepare(`
-    INSERT INTO actividad_fisica (id, usuario_id, tiempo, fecha_registro, intensidad)
-    VALUES (@id, @usuario_id, @tiempo, @fecha_registro, @intensidad)
-`);
-for (let i = 0; i < 10; i++) {
-    insertActividad.run({
-        id: `${i + 1}`,
-        usuario_id: `${(i % usuarios.length) + 1}`,
-        tiempo: `00:${30 + i}:00`,
-        fecha_registro: `2025-06-${12 + i}`,
-        intensidad: ['Baja', 'Moderada', 'Alta'][i % 3]
+        tiempo_registro: `2025-06-${11 + i}`
     });
 }
 
 // Insertar objetivos
 const insertObjetivo = db.prepare(`
-    INSERT INTO objetivos (id, usuario_id, objetivo, peso_meta, calorias_meta, fecha_inicio, fecha_objetivo)
-    VALUES (@id, @usuario_id, @objetivo, @peso_meta, @calorias_meta, @fecha_inicio, @fecha_objetivo)
+    INSERT INTO objetivos (usuario_id, numero_objetivo, objetivo, peso_meta, calorias_meta, fecha_inicio, fecha_objetivo)
+    VALUES (@usuario_id, @numero_objetivo, @objetivo, @peso_meta, @calorias_meta, @fecha_inicio, @fecha_objetivo)
 `);
 for (let i = 0; i < 10; i++) {
-    const usuario = usuarios[i % usuarios.length];
+    const usuario = usuariosDB[i % usuariosDB.length];
     insertObjetivo.run({
-        id: `${i + 1}`,
         usuario_id: usuario.usuario_id,
+        numero_objetivo: i + 1,
         objetivo: usuario.objetivo,
         peso_meta: usuario.peso - 5 + i,
         calorias_meta: `${1800 + i * 100}`,
@@ -200,16 +180,15 @@ for (let i = 0; i < 10; i++) {
     });
 }
 
-// Insertar favoritos
+// Insertar alimentos_favoritos
 const insertFavorito = db.prepare(`
-    INSERT INTO favoritos (id, usuario_id, alimento_id, fecha_registro)
-    VALUES (@id, @usuario_id, @alimento_id, @fecha_registro)
+    INSERT INTO alimentos_favoritos (usuario_id, alimento_id, fecha_registro)
+    VALUES (@usuario_id, @alimento_id, @fecha_registro)
 `);
 for (let i = 0; i < 10; i++) {
     insertFavorito.run({
-        id: `${i + 1}`,
-        usuario_id: `${(i % usuarios.length) + 1}`,
-        alimento_id: `${(i % alimentos.length) + 1}`,
+        usuario_id: usuariosDB[i % usuariosDB.length].usuario_id,
+        alimento_id: alimentosDB[i % alimentosDB.length].alimento_id,
         fecha_registro: `2025-06-${15 + i}`
     });
 }
@@ -236,6 +215,6 @@ function guardarEsquemaSQL() {
 
 guardarEsquemaSQL();
 
-console.log('✅ Tablas creadas e información insertada correctamente.');
+console.log('✅ Base de datos creada y datos insertados correctamente.');
 
 module.exports = db;
