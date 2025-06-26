@@ -3,7 +3,7 @@ node_modules/
 dist/
 
 # SQLite database
-#*.db
+*.db
 
 # Logs y sistema
 *.log
