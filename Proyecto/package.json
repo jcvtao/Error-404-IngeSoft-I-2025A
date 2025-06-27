@@ -1,0 +1,26 @@
+{
+  "name": "fitapp",
+  "version": "1.0.0",
+  "main": "electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "electron": "electron .",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron-dev": "concurrently \"npm run dev\" \"start .\\node_modules\\.bin\\electron.cmd .\""
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^12.1.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.0.0",
+    "concurrently": "^8.0.1",
+    "electron": "^37.1.0",
+    "electron-rebuild": "^3.2.9",
+    "svelte": "^3.59.2",
+    "vite": "^4.5.0",
+    "wait-on": "^7.0.1"
+  }
+}
