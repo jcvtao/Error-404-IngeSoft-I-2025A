@@ -8,7 +8,8 @@
     "electron": "electron .",
     "build": "vite build",
     "preview": "vite preview",
-    "electron-dev": "concurrently \"npm run dev\" \"start .\\node_modules\\.bin\\electron.cmd .\""
+    "electron-dev": "concurrently \"npm run dev\" \"cross-env NODE_ENV=development electron .\"",
+    "package": "npm run build && electron-builder build"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -21,6 +22,31 @@
     "electron-rebuild": "^3.2.9",
     "svelte": "^3.59.2",
     "vite": "^4.5.0",
-    "wait-on": "^7.0.1"
+    "wait-on": "^7.0.1",
+    "electron-builder": "^24.9.1",
+    "cross-env": "^7.0.3" 
+  },
+  "build": {
+    "appId": "com.fitapp.app",
+    "productName": "FitApp",
+    "files": [
+      "electron/**/*",
+      "dist/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icons"
+    }
   }
 }

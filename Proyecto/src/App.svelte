@@ -60,7 +60,7 @@
   <Login on:loginExitoso={loginExitoso} on:mostrarRegistro={mostrarRegistro}/>
 
 {:else if vista === 'registro'}
-  <Registro on:registroExitoso={mostrarLogin} />
+  <Registro on:registroExitoso={mostrarLogin} on:mostrarInicio={mostrarInicio} />
 
 {:else if vista === 'dashboard'}
   <Navbar on:navegar={mostrarInicio} on:cerrarSesion={mostrarInicio} />

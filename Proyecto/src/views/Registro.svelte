@@ -18,6 +18,9 @@
   let imc = 0;
   let mensajeError = ''; // ← aquí agregamos el mensaje de error
 
+  function mostrarInicio() {
+    dispatch('mostrarInicio');
+  }
   function calculoIMC(peso, altura) {
     const alturaM = parseInt(altura) / 100;
     imc = (parseFloat(peso) / (alturaM * alturaM)).toFixed(1);
@@ -171,8 +174,8 @@
         </div>
       </div>
       <div class="d-flex justify-content-between">
-        <a class="navbar-brand text-light fw-semibold fs-3" href="/">
-        <button class="btn btn-secondary fw-semibold"><i class="fa-solid fa-circle-chevron-left"></i> Atrás</button>
+        <a class="navbar-brand text-light fw-semibold fs-3" href="#">
+        <button class="btn btn-secondary fw-semibold" on:click={mostrarInicio}><i class="fa-solid fa-circle-chevron-left"></i> Atrás</button>
         </a>
         <button class="btn btn-warning fw-semibold" on:click={() => paso = 2} disabled={!objetivo}>Siguiente <i class="fa-solid fa-circle-chevron-right"></i></button>
       </div>
