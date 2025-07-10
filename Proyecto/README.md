@@ -1,6 +1,6 @@
 # FitApp 🥬🌽 - Guía de Desarrollo
 
-Esta guía te ayudará a configurar y ejecutar FitApp en tu entorno de desarrollo.
+¡Esta guía te ayudará a configurar y ejecutar *FitApp 🥬🌽* en tu entorno de desarrollo!
 
 
 ## Requisitos 📋
@@ -20,15 +20,28 @@ Asegúrate de tener instalado lo siguiente:
 - Acceso a terminal o consola (cmd / PowerShell / bash).
 
 
-## Configuración Automática 🚀
+## Estructura Inicial
 
 *TODO*
 
 
+## Configuración Automática 🚀
+
+### Windows
+
+```bash
+setup_env.bat
+```
+
+### macOS/Linux
+
+```bash
+bash TODO
+```
+
 ## Configuración Manual 🛠️
 
 Sigue estos pasos para preparar tu entorno:
-
 
 ### 1. Clona el repositorio:
 
@@ -37,13 +50,11 @@ git clone https://github.com/jcvtao/Error-404-IngeSoft-I-2025A
 cd Error-404-IngeSoft-I-2025A/Proyecto
 ```
 
-
 ### 2. Instala dependencias:
 
 ```bash
 npm install
 ```
-
 
 ### 3. Reconstruye módulos nativos para Electron
 Este paso es CRÍTICO para evitar errores.
@@ -52,13 +63,12 @@ Este paso es CRÍTICO para evitar errores.
 npx electron-rebuild
 ```
 
-Si en Windows `npx` falla, prueba:
+Si en Windows `npx` falla, intenta haciendo:
 ```bash
 .\node_modules\.bin\electron-rebuild.cmd
 ```
 
 Asegúrate de que este comando se complete sin errores. Si persisten, revisa la instalación de las herramientas de compilación.
-
 
 ### 4. Ejecución en Desarrollo
 
