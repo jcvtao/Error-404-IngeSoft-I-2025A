@@ -63,8 +63,8 @@ function initializeDb() {
                 cantidad REAL NOT NULL,
                 calorias REAL NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id), -- Cambiado a 'id'
-                FOREIGN KEY(alimento_id) REFERENCES alimento(id) -- Cambiado a 'id'
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
+                FOREIGN KEY(alimento_id) REFERENCES alimento(id)
             );
         `);
         console.log('[db.js] Tabla "registro_dieta" verificada/creada.');
@@ -77,7 +77,7 @@ function initializeDb() {
                 peso REAL NOT NULL,
                 imc REAL NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id) -- Cambiado a 'id'
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
             );
         `);
         console.log('[db.js] Tabla "historial_peso" verificada/creada.');
@@ -92,7 +92,7 @@ function initializeDb() {
                 calorias_meta VARCHAR NOT NULL,
                 fecha_inicio DATE NOT NULL,
                 fecha_objetivo DATE NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id) -- Cambiado a 'id'
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
             );
         `);
         console.log('[db.js] Tabla "objetivos" verificada/creada.');
@@ -103,8 +103,8 @@ function initializeDb() {
                 usuario_id INTEGER NOT NULL,
                 alimento_id INTEGER NOT NULL,
                 fecha_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id), -- Cambiado a 'id'
-                FOREIGN KEY(alimento_id) REFERENCES alimento(id) -- Cambiado a 'id'
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
+                FOREIGN KEY(alimento_id) REFERENCES alimento(id)
             );
         `);
         console.log('[db.js] Tabla "alimentos_favoritos" verificada/creada.');
@@ -151,7 +151,7 @@ function guardarEsquemaSQL() {
     // Aquí se asume una ruta para fines de desarrollo/documentación.
     // Ajusta la ruta según donde quieras tu documentación REAL.
     // Por ejemplo, para guardarla en el directorio raíz del proyecto:
-    const ruta = path.join(app.getAppPath(), 'Documentacion', 'Proyecto', 'script_implementacion.sql');
+    const ruta = path.join(app.getAppPath(), '..','Documentacion', 'Proyecto', 'script_implementacion.sql');
     const docDir = path.dirname(ruta);
 
     try {
