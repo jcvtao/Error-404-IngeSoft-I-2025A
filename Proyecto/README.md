@@ -36,7 +36,7 @@ setup_env.bat
 ### macOS/Linux
 
 ```bash
-bash TODO
+bash setup_env.sh
 ```
 
 ## Configuración Manual 🛠️
