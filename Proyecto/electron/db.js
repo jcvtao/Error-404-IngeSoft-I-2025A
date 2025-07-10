@@ -151,7 +151,7 @@ function guardarEsquemaSQL() {
     // Aquí se asume una ruta para fines de desarrollo/documentación.
     // Ajusta la ruta según donde quieras tu documentación REAL.
     // Por ejemplo, para guardarla en el directorio raíz del proyecto:
-    const ruta = path.join(app.getAppPath(), '..','Documentacion', 'Proyecto', 'script_implementacion.sql');
+    const ruta = path.join(app.getAppPath(), '..','Documentación', 'Proyecto', 'script_implementacion.sql');
     const docDir = path.dirname(ruta);
 
     try {
