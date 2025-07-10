@@ -27,7 +27,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM --- 2. Instalacion de Dependencias del Proyecto ---
+REM --- 3. Reconstrucción modulos nativos para Electron ---
 echo.
 echo (3/4) Reconstruyendo modulos nativos para Electron...
 REM Se utiliza la carpeta local sobre npx electron-rebuild para evitar problemas con el script
