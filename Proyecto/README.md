@@ -1,46 +1,69 @@
-FitApp - Guía de Desarrollo
+# FitApp 🥬🌽 - Guía de Desarrollo
+
 Esta guía te ayudará a configurar y ejecutar FitApp en tu entorno de desarrollo.
 
-📋 Requisitos Previos
+
+## Requisitos 📋
+
 Asegúrate de tener instalado lo siguiente:
 
-Node.js: Se recomienda la versión v20.19.3 (o cualquier v20.x.x). Puedes usar NVM para gestionarlo.
+- **Node.js v20.x.x:** Se recomienda la versión v20.19.3, Puedes usar NVM para gestionarlo. [¡Descarga aquí!](https://nodejs.org/en/download/current)
 
-npm: Versión v10.x.x (se instala con Node.js).
+- **npm v10.x.x:** Se instala con Node.js.
 
-Herramientas de compilación C++: Necesarias para módulos nativos como better-sqlite3 y bcrypt.
+- **Herramientas de compilación C++:** Necesarias para módulos nativos como better-sqlite3 y bcrypt.
 
-Windows: Instala Visual Studio Build Tools con la carga de trabajo "Desarrollo de escritorio con C++". Descárgalas desde visualstudio.microsoft.com.
+    - **Windows:** Instala Visual Studio Build Tools con la carga de trabajo "Desarrollo de escritorio con C++". [¡Descarga aquí!](https://visualstudio.microsoft.com/es/visual-cpp-build-tools/)
 
-macOS/Linux: Asegúrate de tener las herramientas de línea de comandos de desarrollo instaladas.
+    - **macOS/Linux:** Asegúrate de tener las herramientas de línea de comandos de desarrollo instaladas.
 
-🚀 Configuración Rápida
+- Acceso a terminal o consola (cmd / PowerShell / bash).
+
+
+## Configuración Automática 🚀
+
+*TODO*
+
+
+## Configuración Manual 🛠️
+
 Sigue estos pasos para preparar tu entorno:
 
-Clona el repositorio:
 
-Bash
+### 1. Clona el repositorio:
 
+```bash
 git clone https://github.com/jcvtao/Error-404-IngeSoft-I-2025A
 cd Error-404-IngeSoft-I-2025A/Proyecto
-Instala dependencias:
+```
 
-Bash
 
+### 2. Instala dependencias:
+
+```bash
 npm install
-Reconstruye módulos nativos para Electron:
+```
+
+
+### 3. Reconstruye módulos nativos para Electron
 Este paso es CRÍTICO para evitar errores.
 
-Bash
-
+```bash
 npx electron-rebuild
-Si en Windows npx falla, prueba: .\node_modules\.bin\electron-rebuild.cmd
+```
+
+Si en Windows `npx` falla, prueba:
+```bash
+.\node_modules\.bin\electron-rebuild.cmd
+```
 
 Asegúrate de que este comando se complete sin errores. Si persisten, revisa la instalación de las herramientas de compilación.
 
-▶️ Ejecutar en Desarrollo
+
+### 4. Ejecución en Desarrollo
+
 Para iniciar la aplicación en modo desarrollo (frontend con Vite, backend con Electron):
 
-Bash
-
+```bash
 npm run electron-dev
+```
