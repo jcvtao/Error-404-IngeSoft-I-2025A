@@ -20,11 +20,6 @@ Asegúrate de tener instalado lo siguiente:
 - Acceso a terminal o consola (cmd / PowerShell / bash).
 
 
-## Estructura Inicial
-
-*TODO*
-
-
 ## Configuración Automática 🚀
 
 ### Windows
