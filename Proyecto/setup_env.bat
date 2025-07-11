@@ -40,17 +40,8 @@ if %errorlevel% neq 0 (
 )
 echo [OK] Reconstruccion de modulos nativos para Electron completada sin problemas.
 
-REM --- ?. Inicializacion de la Base de Datos ---
-@REM echo.
-@REM echo (3/4) Inicializando la base de datos de desarrollo...
-@REM CALL npm run db:init
-@REM if %errorlevel% neq 0 (
-@REM     echo [ERROR] Fallo la inicializacion de la base de datos.
-@REM     exit /b 1
-@REM )
-@REM echo [OK] Base de datos lista.
-
 REM --- 4. Ejecucion del Proyecto en Modo Desarrollo ---
+REM --- Incluye inicialización de la base de datos ---
 echo.
 echo (4/4) Ejecutando el proyecto en modo desarrollo...
 CALL npm run electron-dev

@@ -25,15 +25,8 @@ echo "(3/4) Reconstruyendo módulos nativos para Electron..."
 npx electron-rebuild
 echo "[OK] Dependencias instaladas y reconstruidas."
 
-# --- ?. Inicialización de la Base de Datos ---
-# echo ""
-# echo "======================================================="
-# echo "(3/4) Inicializando la base de datos de desarrollo..."
-# echo "======================================================="
-# npm run db:init
-# echo "[OK] Base de datos lista."
-
 # --- 4. Ejecución del Proyecto en Modo Desarrollo ---
+# --- Incluye inicialización de la base de datos ---
 echo ""
 echo "(4/4) Ejecutando el proyecto en modo desarrollo..."
 npm run electron-dev
