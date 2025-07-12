@@ -43,8 +43,19 @@
     calorias = Math.round(tmb);
   }
 
+  function validarPassword(password) {
+    // Al menos 8 caracteres, una mayúscula, una minúscula, un número, sin espacios
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/;
+    return regex.test(password);
+  }
+
   async function registrarUsuario() {
     mensajeError = ''; // Reinicia el mensaje antes de intentar registrar
+
+    if (!validarPassword(password)) {
+      mensajeError = 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.';
+      return;
+    }
 
     const usuario = {
       nombre,
