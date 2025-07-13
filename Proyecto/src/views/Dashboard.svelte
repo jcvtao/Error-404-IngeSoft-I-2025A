@@ -2,21 +2,14 @@
   import { onMount } from 'svelte';
   import ModalAgregarAlimento from './AgregarAlimento.svelte';
 
-  let emojis = ['🥦', '🥕', '🌽', '🥬', '🧄', '🍞', '🍗', '🫐', '🍇', '🥚'];
-  let fondo = [];
+  export let usuarioActual;
 
-  const cantidad = 50;
-  for (let i = 0; i < cantidad; i++) {
-    fondo.push({
-      emoji: emojis[Math.floor(Math.random() * emojis.length)],
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      size: 1.5 + Math.random() * 2,
-    });
-  }
+  let alimentosFavoritos = [];
+  let mostrarModal = false;
+  let seccionActiva = null;
 
   let caloriasSugeridas = 2200;
-  let caloriasConsumidas = 100;
+  let caloriasConsumidas = 0;
 
   let secciones = [
     { nombre: 'Desayuno', alimentos: [] },
@@ -24,12 +17,22 @@
     { nombre: 'Cena', alimentos: [] }
   ];
 
-  let mostrarModal = false;
-  let seccionActiva = null;
+  // Fondo decorativo (opcional)
+  let emojis = ['🥦', '🥕', '🌽', '🥬', '🧄', '🍞', '🍗', '🫐', '🍇', '🥚'];
+  let fondo = Array.from({ length: 50 }, () => ({
+    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    size: 1.5 + Math.random() * 2
+  }));
 
-  function agregarSeccion() {
-    const nombre = prompt('Nombre de la nueva sección:');
-    if (nombre) secciones = [...secciones, { nombre, alimentos: [] }];
+  async function cargarAlimentosFavoritos() {
+    try {
+      const respuesta = await window.electronAPI.obtenerAlimentosFavoritos(usuarioActual.id);
+      alimentosFavoritos = respuesta || [];
+    } catch (e) {
+      console.error("Error al cargar alimentos favoritos:", e);
+    }
   }
 
   function abrirModal(seccion) {
@@ -47,8 +50,18 @@
     caloriasConsumidas += alimento.calorias;
     cerrarModal();
   }
+
+  function agregarSeccion() {
+    const nombre = prompt('Nombre de la nueva sección:');
+    if (nombre) secciones = [...secciones, { nombre, alimentos: [] }];
+  }
+
+  onMount(() => {
+    cargarAlimentosFavoritos();
+  });
 </script>
 
+<!-- Fondo -->
 <div class="dashboard-fondo">
   {#each fondo as item (item)}
     <div
@@ -66,8 +79,11 @@
         <h5 class="text-center">Calorías consumidas</h5>
         <h5 class="text-center text-warning">{caloriasConsumidas} / {caloriasSugeridas} kcal</h5>
         <div class="progress bg-light rounded-pill" style="height: 15px">
-          <div class="progress-bar bg-warning" role="progressbar" style="width: {Math.min((caloriasConsumidas / caloriasSugeridas) * 100, 100)}%">
-          </div>
+          <div
+            class="progress-bar bg-warning"
+            role="progressbar"
+            style="width: {Math.min((caloriasConsumidas / caloriasSugeridas) * 100, 100)}%"
+          ></div>
         </div>
       </div>
 
@@ -84,15 +100,20 @@
               {/each}
             </ul>
           {/if}
-          <button class="btn btn-sm btn-outline-warning mt-2 fw-semibold" on:click={() => abrirModal(seccion)}>Agregar alimento</button>
+          <button class="btn btn-sm btn-outline-warning mt-2 fw-semibold" on:click={() => abrirModal(seccion)}>
+            Agregar alimento
+          </button>
         </div>
 
         {#if i === 0 || i === 1}
           <div class="text-center mb-3">
-            <button class="btn btn-outline-secondary btn-sm" on:click={agregarSeccion}>+ Agregar nueva sección</button>
+            <button class="btn btn-outline-secondary btn-sm" on:click={agregarSeccion}>
+              + Agregar nueva sección
+            </button>
           </div>
         {/if}
       {/each}
+
       <div class="alert alert-info text-center mt-4" role="alert">
         ¡Recuerda mantener un balance en tus comidas para una vida saludable! 🥗
       </div>
@@ -100,7 +121,11 @@
   </div>
 
   {#if mostrarModal}
-    <ModalAgregarAlimento on:cerrar={cerrarModal} on:guardar={agregarAlimento} />
+    <ModalAgregarAlimento
+    usuarioId={usuarioActual.id}
+    on:cerrar={cerrarModal}
+    on:guardar={agregarAlimento}
+  />
   {/if}
 </div>
 

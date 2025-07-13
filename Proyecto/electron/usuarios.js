@@ -67,6 +67,87 @@ export async function loginUsuario(username, password) {
         throw error;
     }
 }
+export function guardarAlimentosFavoritos(usuarioId, alimentosIds) {
+  try {
+    const fecha = new Date().toISOString();
 
+    const placeholders = alimentosIds.map(() => `(?, ?, ?)`).join(', ');
+    const values = alimentosIds.flatMap(id => [usuarioId, id, fecha]);
 
+    const sql = `
+      INSERT INTO alimentos_favoritos (usuario_id, alimento_id, fecha_registro)
+      VALUES ${placeholders}
+    `;
 
+    db.prepare(sql).run(...values);
+
+    console.log(`[usuarios.js] Alimentos favoritos guardados para el usuario ${usuarioId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('[usuarios.js] Error al guardar alimentos favoritos:', error);
+    return { success: false, mensaje: error.message };
+  }
+}
+
+// Verifica si el usuario ya tiene preferencias registradas
+export function tienePreferenciasRegistradas(usuarioId) {
+  try {
+    const row = db.prepare(`
+      SELECT COUNT(*) as total FROM alimentos_favoritos WHERE usuario_id = ?
+    `).get(usuarioId);
+    return row.total > 0;
+  } catch (error) {
+    console.error('[usuarios.js] Error al verificar preferencias:', error);
+    return false;
+  }
+}
+
+export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
+  try {
+    // Verificar si el alimento ya existe en la tabla 'alimento'
+    let alimento = db.prepare(`
+      SELECT id FROM alimento WHERE nombre_alimento = ?
+    `).get(nombreAlimento);
+
+    let alimentoId;
+
+    if (!alimento) {
+      // Insertar nuevo alimento en la tabla alimento
+      const insert = db.prepare(`
+        INSERT INTO alimento (nombre_alimento, gramos, calorias)
+        VALUES (?, ?, ?)
+      `);
+      const result = insert.run(nombreAlimento, 100, calorias); // 100g por defecto
+      alimentoId = result.lastInsertRowid;
+    } else {
+      alimentoId = alimento.id;
+    }
+
+    // Insertar en registro_dieta
+    db.prepare(`
+      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, tiempo_registro)
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `).run(usuarioId, alimentoId, 1, calorias); // Cantidad = 1 por defecto
+
+    return { success: true };
+  } catch (error) {
+    console.error("[usuarios.js] Error al registrar comida diaria:", error);
+    return { success: false, mensaje: error.message };
+  }
+}
+
+export function obtenerAlimentosFavoritos(usuarioId) {
+  try {
+    const stmt = db.prepare(`
+      SELECT alimento.id, alimento.nombre_alimento AS nombre, alimento.calorias
+      FROM alimentos_favoritos
+      JOIN alimento ON alimento.id = alimentos_favoritos.alimento_id
+      WHERE alimentos_favoritos.usuario_id = ?
+      ORDER BY alimentos_favoritos.fecha_registro DESC
+    `);
+    return stmt.all(usuarioId);
+  } catch (error) {
+    console.error("[usuarios.js] Error al obtener alimentos favoritos:", error);
+    return [];
+  }
+}

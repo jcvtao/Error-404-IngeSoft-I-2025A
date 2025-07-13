@@ -1,54 +1,106 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
 
-  let nombre = '';
-  let calorias = '';
+  let paso = 1;
+  let alimentos = [];
+  let seleccionado = null;
+  let gramos = '';
 
-  function cerrar() {
+  export let usuarioId;
+
+  onMount(async () => {
+    try {
+      alimentos = await window.electronAPI.obtenerAlimentosFavoritos(usuarioId);
+    } catch (error) {
+      console.error('Error cargando alimentos favoritos:', error);
+    }
+  });
+
+  function cerrarModal() {
     dispatch('cerrar');
   }
 
+  function extraerEmoji(texto) {
+    if (!texto || typeof texto !== 'string') return '🍽️';
+    const match = texto.match(/^([\p{Emoji}])/u);
+    return match ? match[1] : '🍽️';
+  }
+
+  function seleccionar(alimento) {
+    seleccionado = alimento;
+  }
+
+  function continuar() {
+    if (seleccionado) {
+      paso = 2;
+    }
+  }
+
+  function cancelarSeleccion() {
+    paso = 1;
+    seleccionado = null;
+    gramos = '';
+  }
+
   function guardar() {
-    dispatch('guardar', { nombre, calorias: Number(calorias) });
+    const calorias = Math.round((seleccionado.calorias * gramos) / 100);
+    dispatch('guardar', { nombre: seleccionado.nombre, calorias });
   }
 </script>
 
 <div class="modal-backdrop">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header d-flex justify-content-between align-items-start">
-        <h5 class="modal-title fw-bold text-dark">Agregar alimento 🍽️</h5>
-        <button class="close-btn" aria-label="Cerrar" on:click={cerrar}>
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title fw-bold">{paso === 1 ? 'Selecciona un alimento' : '¿Cuántos gramos consumiste?'}</h3>
+      <button class="cerrar" on:click={cerrarModal}><i class="fa-solid fa-xmark"></i></button>
+    </div>
 
-      <div class="modal-body">
-        <input
-          class="form-control mb-3"
-          bind:value={nombre}
-          placeholder="Nombre del alimento (ej: 🍞 Pan)"
-        />
-        <input
-          class="form-control"
-          type="number"
-          min="0"
-          bind:value={calorias}
-          placeholder="Calorías (ej: 150)"
-        />
-      </div>
-
-      <div class="modal-footer d-flex justify-content-end gap-2">
-
-        <button
-          class="btn btn-warning fw-semibold"
-          on:click={guardar}
-          disabled={!nombre || !calorias}
-        >
-          Guardar
-        </button>
-      </div>
+    <div class="modal-body">
+      {#if paso === 1}
+        <div class="grid">
+          {#each alimentos as alimento}
+            <div
+              class="alimento-card {seleccionado?.id === alimento.id ? 'seleccionado' : ''}"
+              on:click={() => seleccionar(alimento)}
+              title={alimento.nombre}
+            >
+              <div class="emoji">{extraerEmoji(alimento.nombre)}</div>
+              <div class="calorias">{alimento.calorias} kcal</div>
+            </div>
+          {/each}
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <button
+            class="btn btn-warning fw-semibold"
+            on:click={continuar}
+            disabled={!seleccionado}
+          >
+            Continuar
+          </button>
+        </div>
+      {:else}
+        <div class="pregunta">
+          <p class="text-muted text-center mb-2">{seleccionado.nombre}</p>
+          <input
+            type="number"
+            bind:value={gramos}
+            min="0"
+            class="form-control mb-3"
+            placeholder="Gramos consumidos"
+          />
+          <div class="d-flex gap-2">
+            <button class="btn btn-secondary w-50" on:click={cancelarSeleccion}>Cancelar</button>
+            <button
+              class="btn btn-warning w-50 fw-semibold"
+              on:click={guardar}
+              disabled={!gramos}
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
@@ -64,45 +116,79 @@
   z-index: 1050;
 }
 
-.modal-dialog {
-  width: 100%;
-  max-width: 420px;
+.modal-card {
+  background-color: white;
+  border-radius: 1rem;
+  width: 95%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.2s ease;
 }
 
-.modal-content {
-  background-color: #fff;
-  border-radius: 1.2rem;
-  border: 1px solid #ddd;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-}
-
 .modal-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.modal-body {
-  padding: 1.5rem;
+.modal-header h5 {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
 }
 
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #eee;
-}
-
-.close-btn {
-  background: transparent;
+.cerrar {
+  background: none;
   border: none;
   font-size: 1.2rem;
   color: #444;
-  transition: color 0.2s;
   cursor: pointer;
 }
 
-.close-btn:hover {
-  color: #000;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+}
+
+.alimento-card {
+  background: #f9f9f9;
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.2rem;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  transition: all 0.15s ease;
+  border: 2px solid transparent;
+}
+
+.alimento-card:hover {
+  border-color: #ffc107;
+  background-color: #fff3cd;
+}
+
+.alimento-card.seleccionado {
+  border-color: #ffc107;
+  background-color: #ffe69c;
+}
+
+.emoji {
+  font-size: 1.4rem;
+  margin-bottom: 0.1rem;
+}
+
+.calorias {
+  font-size: 0.65rem;
+  color: #555;
+}
+
+.pregunta {
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes fadeIn {
@@ -116,3 +202,5 @@
   }
 }
 </style>
+
+
