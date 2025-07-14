@@ -1,20 +1,14 @@
 import Database from 'better-sqlite3';
-import { app } from 'electron'; // Importamos 'app' de Electron para rutas de sistema
+import { app } from 'electron';
 import path from 'node:path';
-import fs from 'node:fs'; // Necesario para verificar y crear directorios
+import fs from 'node:fs';
 
 let db;
-const DB_NAME = 'fitapp.db'; // Nombre de tu archivo de base de datos
+const DB_NAME = 'fitapp.db';
 
-/**
- * Inicializa y conecta a la base de datos SQLite.
- * Utiliza el directorio de datos del usuario de la aplicación para almacenar el archivo DB,
- * lo que garantiza que sea persistente y escribible en entornos empaquetados.
- */
 function initializeDb() {
     try {
-        const userDataPath = app.getPath('userData'); // Ruta de datos del usuario (escribible)
-        // Crea el directorio de datos del usuario si no existe
+        const userDataPath = app.getPath('userData');
         if (!fs.existsSync(userDataPath)) {
             fs.mkdirSync(userDataPath, { recursive: true });
             console.log(`[db.js] Creado directorio de datos del usuario: ${userDataPath}`);
@@ -23,11 +17,10 @@ function initializeDb() {
         const dbPath = path.join(userDataPath, DB_NAME);
         console.log(`[db.js] Intentando conectar/crear base de datos en: ${dbPath}`);
 
-        // Conecta a la base de datos. Si el archivo no existe, lo crea.
-        db = new Database(dbPath, { verbose: console.log }); // 'verbose' para ver logs de sqlite en consola
+        db = new Database(dbPath, { verbose: console.log });
         console.log('[db.js] Conexión a la base de datos establecida.');
 
-        // --- Crear/Verificar tablas ---
+        // Crear tablas
         db.exec(`
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,20 +35,14 @@ function initializeDb() {
                 intensidad VARCHAR NOT NULL,
                 fecha_registro DATE NOT NULL
             );
-        `);
-        console.log('[db.js] Tabla "usuarios" verificada/creada.');
 
-        db.exec(`
             CREATE TABLE IF NOT EXISTS alimento (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre_alimento VARCHAR NOT NULL,
                 gramos REAL NOT NULL,
                 calorias REAL NOT NULL
             );
-        `);
-        console.log('[db.js] Tabla "alimento" verificada/creada.');
 
-        db.exec(`
             CREATE TABLE IF NOT EXISTS registro_dieta (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
@@ -66,10 +53,7 @@ function initializeDb() {
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
                 FOREIGN KEY(alimento_id) REFERENCES alimento(id)
             );
-        `);
-        console.log('[db.js] Tabla "registro_dieta" verificada/creada.');
 
-        db.exec(`
             CREATE TABLE IF NOT EXISTS historial_peso (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
@@ -79,10 +63,7 @@ function initializeDb() {
                 tiempo_registro DATETIME NOT NULL,
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
             );
-        `);
-        console.log('[db.js] Tabla "historial_peso" verificada/creada.');
 
-        db.exec(`
             CREATE TABLE IF NOT EXISTS objetivos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
@@ -94,10 +75,7 @@ function initializeDb() {
                 fecha_objetivo DATE NOT NULL,
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
             );
-        `);
-        console.log('[db.js] Tabla "objetivos" verificada/creada.');
 
-        db.exec(`
             CREATE TABLE IF NOT EXISTS alimentos_favoritos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
@@ -107,31 +85,46 @@ function initializeDb() {
                 FOREIGN KEY(alimento_id) REFERENCES alimento(id)
             );
         `);
-        console.log('[db.js] Tabla "alimentos_favoritos" verificada/creada.');
 
-        // Verificar si ya hay datos (y eliminar el process.exit(0))
-        const existeUsuario = db.prepare(`SELECT COUNT(*) AS count FROM usuarios`).get().count;
-        if (existeUsuario > 0) {
-            console.log('ℹ️  La base de datos ya está inicializada. No se insertan datos de ejemplo.');
+        // Verifica si la tabla alimento está vacía y la prellena
+        const alimentosExistentes = db.prepare(`SELECT COUNT(*) AS total FROM alimento`).get().total;
+        if (alimentosExistentes === 0) {
+            const alimentos = [
+                ["🍎 Manzana", 100, 52], ["🍌 Banano", 100, 89], ["🍓 Fresa", 100, 33], ["🍇 Uvas", 100, 69],
+                ["🍍 Piña", 100, 50], ["🥭 Mango", 100, 60], ["🍊 Naranja", 100, 47], ["🍉 Sandía", 100, 30],
+                ["🥛 Leche", 100, 42], ["🍶 Yogur", 100, 59], ["🧀 Queso", 100, 402], ["🧈 Mantequilla", 100, 717],
+                ["🍨 Helado", 100, 207], ["🥤 Batido", 100, 150], ["🍫 Chocolate", 100, 546], ["☕ Café con leche", 100, 42],
+                ["🥚 Huevo", 100, 155], ["🍗 Pollo", 100, 165], ["🥩 Carne", 100, 250], ["🐟 Pescado", 100, 206],
+                ["🧈 Tofu", 100, 76], ["🐖 Cerdo", 100, 242], ["🍲 Lentejas", 100, 116], ["🫘 Frijoles", 100, 127],
+                ["🍚 Arroz", 100, 130], ["🍞 Pan", 100, 265], ["🍝 Pasta", 100, 131], ["🌽 Maíz", 100, 86],
+                ["🥔 Papa", 100, 77], ["🫚 Yuca", 100, 160], ["🌾 Avena", 100, 389], ["🫓 Arepa", 100, 227],
+                ["🥑 Aguacate", 100, 160], ["🫙 Mantequilla de maní", 100, 588], ["🥜 Maní", 100, 567],
+                ["🌰 Almendras", 100, 579], ["🍿 Palomitas", 100, 536]
+            ];
+
+            const insert = db.prepare(`INSERT INTO alimento (nombre_alimento, gramos, calorias) VALUES (?, ?, ?)`);
+            const insertMany = db.transaction((alimentos) => {
+                for (const alimento of alimentos) insert.run(...alimento);
+            });
+
+            insertMany(alimentos);
+            console.log("[db.js] Tabla 'alimento' prellenada con alimentos predeterminados.");
+        }
+
+        // Mensaje de control para usuarios
+        const usuarios = db.prepare(`SELECT COUNT(*) AS count FROM usuarios`).get().count;
+        if (usuarios > 0) {
+            console.log('ℹ️  Base de datos ya tiene usuarios registrados.');
         } else {
-            console.log('✅ Base de datos vacía, lista para registrar usuarios.');
-            // Puedes agregar aquí la inserción de datos de ejemplo si no existen usuarios
-            // db.prepare(`INSERT INTO usuarios ...`).run();
+            console.log('✅ Base de datos lista para registrar nuevos usuarios.');
         }
 
     } catch (error) {
-        console.error('[db.js] Error al inicializar/conectar la base de datos:', error.message);
-        // Es crucial manejar este error, ya que la aplicación no puede funcionar sin DB
-        app.quit(); // Cierra la aplicación si la base de datos no se puede inicializar
+        console.error('[db.js] Error al inicializar la base de datos:', error.message);
+        app.quit();
     }
 }
 
-/**
- * Función para guardar el esquema SQL en un archivo.
- * NOTA: Esta función está pensada para propósitos de desarrollo/documentación.
- * Su llamada automática podría no ser deseable en la aplicación empaquetada
- * debido a restricciones de escritura en el bundle.
- */
 function guardarEsquemaSQL() {
     const tablas = db.prepare(`
         SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlite_sequence'
@@ -147,10 +140,6 @@ function guardarEsquemaSQL() {
         }
     });
 
-    // La ruta debe ser absoluta y fuera del paquete de la aplicación para evitar problemas de permisos.
-    // Aquí se asume una ruta para fines de desarrollo/documentación.
-    // Ajusta la ruta según donde quieras tu documentación REAL.
-    // Por ejemplo, para guardarla en el directorio raíz del proyecto:
     const ruta = path.join(app.getAppPath(), '..','Documentación', 'Proyecto', 'script_implementacion.sql');
     const docDir = path.dirname(ruta);
 
@@ -166,23 +155,16 @@ function guardarEsquemaSQL() {
     }
 }
 
-// Llama a initializeDb cuando la aplicación Electron esté lista.
-// Esto es CRUCIAL porque 'app.getPath()' y otras APIs de 'app'
-// solo funcionan después de que el evento 'ready' de Electron ha sido disparado.
 app.whenReady().then(() => {
     initializeDb();
-    guardarEsquemaSQL(); // Puedes llamar esto aquí si quieres que se ejecute en desarrollo después de la DB
+    guardarEsquemaSQL(); // Solo en desarrollo
 }).catch(error => {
-    console.error('[db.js] Error durante la inicialización de la DB al app.whenReady:', error);
-    app.quit(); // Cierra la aplicación si hay un error crítico
+    console.error('[db.js] Error durante la inicialización de la DB:', error);
+    app.quit();
 });
 
-
-// Funciones para ejecutar consultas
 export function run(query, params = []) {
     if (!db || db.closed) {
-        console.error('[db.js] Intento de ejecutar "run" con la base de datos no inicializada o cerrada.');
-        // Considera lanzar un error o retornar algo que indique el fallo
         throw new Error("Base de datos no disponible.");
     }
     return db.prepare(query).run(params);
@@ -190,17 +172,13 @@ export function run(query, params = []) {
 
 export function get(query, params = []) {
     if (!db || db.closed) {
-        console.error('[db.js] Intento de ejecutar "get" con la base de datos no inicializada o cerrada.');
         throw new Error("Base de datos no disponible.");
     }
     return db.prepare(query).get(params);
 }
 
-/**
- * Cierra la conexión a la base de datos si está abierta.
- */
 export function closeDb() {
-    if (db && !db.closed) { // Verificar si 'db' existe y no está cerrada
+    if (db && !db.closed) {
         try {
             db.close();
             console.log('[db.js] Conexión a la base de datos cerrada.');
@@ -211,7 +189,5 @@ export function closeDb() {
 }
 
 export {
-    db // Exporta la instancia de la base de datos para uso directo si es necesario
+    db
 };
-// No es necesario exportar 'db' si solo vas a usar las funciones 'run', 'get', 'all'
-//export default  db; // Si no la vas a usar directamente, no la exportes.

@@ -6,18 +6,18 @@
   import Navbar from './views/Navbar.svelte';
   import Dashboard from './views/Dashboard.svelte';
   import Fondo from './views/Fondo.svelte';
+  import Preferencias from './views/Preferencias.svelte';
 
-  let vista = 'inicio';
+  // Estado de la aplicación
+  let vista = 'inicio'; 
   let mostrarFondo = false;
-  
+  let usuarioActual = null;
+  let mostrarPreferencias = false;
 
+  // Navegación
   function transicionVista(nuevaVista) {
     vista = nuevaVista;
-    mostrarFondo = false;
-
-    if (nuevaVista !== 'inicio') {
-        mostrarFondo = true; 
-    }
+    mostrarFondo = nuevaVista !== 'inicio';
   }
 
   function mostrarInicio() {
@@ -31,13 +31,26 @@
   function mostrarRegistro() {
     transicionVista('registro');
   }
+
   function mostrarDashboard() {
     transicionVista('dashboard');
   }
-  function loginExitoso(event) {
-    transicionVista('dashboard');
+
+  // Login exitoso
+  async function loginExitoso(event) {
+    usuarioActual = event.detail.user;
+
+    try {
+      const tiene = await window.electronAPI.tienePreferencias(usuarioActual.id);
+      mostrarPreferencias = !tiene;
+      transicionVista('dashboard');
+    } catch (error) {
+      console.error('Error verificando preferencias:', error);
+      transicionVista('dashboard');
+    }
   }
 
+  // Efecto inicial
   onMount(() => {
     if (vista !== 'inicio') {
       setTimeout(() => {
@@ -52,17 +65,20 @@
   <Fondo />
 {/if}
 
-<!-- Rutas principales -->
+<!-- Vistas principales -->
 {#if vista === 'inicio'}
   <Inicio on:comenzarRegistro={mostrarRegistro} on:comenzarLogin={mostrarLogin} />
 
 {:else if vista === 'login'}
-  <Login on:loginExitoso={loginExitoso} on:mostrarRegistro={mostrarRegistro}/>
+  <Login on:loginExitoso={loginExitoso} on:mostrarRegistro={mostrarRegistro} />
 
 {:else if vista === 'registro'}
   <Registro on:registroExitoso={mostrarLogin} on:mostrarInicio={mostrarInicio} />
 
 {:else if vista === 'dashboard'}
   <Navbar on:navegar={mostrarInicio} on:cerrarSesion={mostrarInicio} />
-  <Dashboard />
+  <Dashboard usuarioActual={usuarioActual} />
+  {#if mostrarPreferencias}
+    <Preferencias usuarioActual={usuarioActual} on:finalizado={() => mostrarPreferencias = false} />
+  {/if}
 {/if}
