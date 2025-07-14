@@ -16,11 +16,12 @@
   let intensidad = 0;
   let calorias = 0;
   let imc = 0;
-  let mensajeError = ''; // ← aquí agregamos el mensaje de error
+  let mensajeError = '';
 
   function mostrarInicio() {
     dispatch('mostrarInicio');
   }
+
   function calculoIMC(peso, altura) {
     const alturaM = parseInt(altura) / 100;
     imc = (parseFloat(peso) / (alturaM * alturaM)).toFixed(1);
@@ -43,8 +44,37 @@
     calorias = Math.round(tmb);
   }
 
+  function validarCampos() {
+    // Validar edad
+    if (!edad || edad < 18 || edad > 100) {
+      mensajeError = 'La edad debe estar entre 18 y 100 años';
+      return false;
+    }
+    
+    // Validar peso
+    if (!peso || peso < 40 || peso > 120) {
+      mensajeError = 'El peso debe estar entre 40 y 120 kg';
+      return false;
+    }
+    
+    // Validar altura
+    if (!altura || altura < 140 || altura > 250) {
+      mensajeError = 'La altura debe estar entre 140 y 250 cm';
+      return false;
+    }
+    
+    // Validar sexo
+    if (!sexo) {
+      mensajeError = 'Por favor selecciona tu sexo';
+      return false;
+    }
+    
+    mensajeError = '';
+    return true;
+  }
+
   async function registrarUsuario() {
-    mensajeError = ''; // Reinicia el mensaje antes de intentar registrar
+    mensajeError = '';
 
     const usuario = {
       nombre,
@@ -195,38 +225,92 @@
       </div>
 
       <div class="mb-3">
-        <label for="edad-select" class="form-label fw-semibold">Edad</label>
-        <select id="edad-select" class="form-select" bind:value={edad}>
-          <option value="" disabled selected>Selecciona tu edad</option>
-            {#each Array(83).fill(0).map((_, i) => i + 18) as e}
-              <option value={e}>{e} años</option>
-            {/each}
-        </select>
+        <label for="edad-input" class="form-label fw-semibold">Edad</label>
+        <input
+          id="edad-input"
+          class="form-control"
+          type="number"
+          min="18"
+          max="100"
+          step="1"
+          bind:value={edad}
+          placeholder="Ingresa tu edad en años"
+        />
+        {#if edad && (edad < 18 || edad > 100)}
+          <div class="text-danger mt-1 small">La edad debe estar entre 18 y 100 años.</div>
+        {/if}
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-semibold">Peso</label>
-        <select class="form-select" bind:value={peso}>
-          <option value="" disabled>Selecciona tu peso</option>
-          {#each Array.from({ length: 221 }, (_, i) => (i * 0.5 + 40).toFixed(1)) as p}
-            <option value={p}>{p} kg</option>
-          {/each}
-        </select>
+        <label class="form-label fw-semibold" for="peso-input">Peso</label>
+        <div class="input-group">
+          <input
+        id="peso-input"
+        class="form-control"
+        type="number"
+        min="40"
+        max="120"
+        step="0.1"
+        bind:value={peso}
+        placeholder="Ingresa tu peso en Kg"
+          />
+          <span class="input-group-text">kg</span>
+        </div>
+        {#if peso && (peso < 40 || peso > 120)}
+          <div class="text-danger mt-1 small">El peso debe estar entre 40 y 120 kg.</div>
+        {/if}
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-semibold">Altura</label>
-          <select class="form-select" bind:value={altura}>
-            <option value="" disabled>Selecciona tu altura</option>
-            {#each Array(111).fill(0).map((_, i) => i + 140) as h}
-              <option value={h}>{h} cm</option>
-            {/each}
-          </select>
+        <label class="form-label fw-semibold" for="altura-input">Altura</label>
+        <div class="input-group">
+          <input
+        id="altura-input"
+        class="form-control"
+        type="number"
+        min="140"
+        max="250"
+        step="1"
+        bind:value={altura}
+        placeholder="Ingresa tu altura en CM"
+          />
+          <span class="input-group-text">cm</span>
+        </div>
+
+        {#if altura && (altura < 140 || altura > 250)}
+          <div class="text-danger mt-1 small">La altura debe estar entre 140 y 250 cm.</div>
+        {/if}
       </div>
+
+      {#if mensajeError}
+        <div class="alert alert-danger mt-3">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          {mensajeError}
+        </div>
+      {/if}
 
       <div class="d-flex justify-content-between">
-        <button class="btn btn-secondary fw-semibold " on:click={() => paso = 1}><i class="fa-solid fa-circle-chevron-left"></i> Atrás</button>
-        <button class="btn btn-warning fw-semibold" on:click={() => paso = 3} disabled={!sexo || !edad || !peso || !altura}>Siguiente <i class="fa-solid fa-circle-chevron-right"></i></button>
+        <button class="btn btn-secondary fw-semibold" on:click={() => paso = 1}>
+          <i class="fa-solid fa-circle-chevron-left"></i> Atrás
+        </button>
+        <button 
+          class="btn btn-warning fw-semibold" 
+          on:click={() => {
+            if (validarCampos()) {
+              paso = 3; 
+              calcularCalorias({ edad, peso, altura, sexo, objetivo, intensidad }); 
+              calculoIMC(peso, altura);
+            }
+          }} 
+          disabled={
+            !sexo ||
+            !edad || edad < 18 || edad > 100 ||
+            !peso || peso < 40 || peso > 120 ||
+            !altura || altura < 140 || altura > 250
+          }
+        >
+          Siguiente <i class="fa-solid fa-circle-chevron-right"></i>
+        </button>
       </div>
 
     {:else if paso === 3}
@@ -263,11 +347,11 @@
         <button class="btn btn-warning fw-semibold" on:click={() => {paso = 4; calcularCalorias({ edad, peso, altura, sexo, objetivo, intensidad }); calculoIMC(peso, altura)}} disabled={!intensidad}>Siguiente <i class="fa-solid fa-circle-chevron-right"></i></button>
       </div>
 
-   <!-- Paso 4: Calorías sugeridas -->
-      {:else if paso === 4}
-        <CaloriasSugeridas calorias={calorias} imc={imc} altura={altura} peso={peso} onConfirmar={() => paso = 5} onBack={() => paso = 3} />
-      <!-- Paso 5: Nombre y contraseña -->
-      {:else if paso === 5}
+    {:else if paso === 4}
+      <!-- Paso 4: Calorías sugeridas -->
+      <CaloriasSugeridas calorias={calorias} imc={imc} altura={altura} peso={peso} onConfirmar={() => paso = 5} onBack={() => paso = 3} />
+      
+    {:else if paso === 5}
       <!-- Paso 5: Nombre, usuario y contraseña -->
       <div class="mb-3 input-group icon-input">
         <span class="input-group-text"><i class="fa fa-id-card"></i></span>
@@ -283,7 +367,7 @@
         <span class="input-group-text"><i class="fa fa-lock"></i></span>
         <input type="password" class="form-control" bind:value={password} placeholder="Contraseña" />
       </div>
-      <!-- ALERTA de error moderna -->
+
       {#if mensajeError}
         <div class="alert alert-danger d-flex align-items-center justify-content-between mt-2 px-3 py-2 rounded-3 shadow-sm" role="alert">
           <div class="d-flex align-items-center gap-2">
@@ -305,4 +389,3 @@
     {/if}
   </div>
 </div>
-
