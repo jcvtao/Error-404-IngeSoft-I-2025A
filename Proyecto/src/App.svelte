@@ -7,6 +7,7 @@
   import Dashboard from './views/Dashboard.svelte';
   import Fondo from './views/Fondo.svelte';
   import Preferencias from './views/Preferencias.svelte';
+  import Perfil from './views/Perfil.svelte';
 
   // Estado de la aplicación
   let vista = 'inicio'; 
@@ -34,6 +35,10 @@
 
   function mostrarDashboard() {
     transicionVista('dashboard');
+  }
+
+  function mostrarPerfil() {
+    transicionVista('perfil');
   }
 
   // Login exitoso
@@ -76,9 +81,12 @@
   <Registro on:registroExitoso={mostrarLogin} on:mostrarInicio={mostrarInicio} />
 
 {:else if vista === 'dashboard'}
-  <Navbar on:navegar={mostrarInicio} on:cerrarSesion={mostrarInicio} />
+  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarInicio} />
   <Dashboard usuarioActual={usuarioActual} />
   {#if mostrarPreferencias}
     <Preferencias usuarioActual={usuarioActual} on:finalizado={() => mostrarPreferencias = false} />
   {/if}
+{:else if vista === 'perfil'}
+  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarInicio} />
+  <Perfil usuarioActual={usuarioActual} />
 {/if}

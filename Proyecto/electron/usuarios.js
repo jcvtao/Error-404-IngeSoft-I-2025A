@@ -67,6 +67,41 @@ export async function loginUsuario(username, password) {
         throw error;
     }
 }
+// ...existing code...
+
+export function registrarPeso(usuarioId, peso, imc) {
+  try {
+    // Obtén el número de registros previos
+    const row = db.prepare(`SELECT COUNT(*) as total FROM historial_peso WHERE usuario_id = ?`).get(usuarioId);
+    const numero_registros = row.total + 1;
+
+    db.prepare(`
+      INSERT INTO historial_peso (usuario_id, numero_registros, peso, imc, tiempo_registro)
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `).run(usuarioId, numero_registros, peso, imc);
+
+    return { success: true };
+  } catch (error) {
+    console.error('[usuarios.js] Error al registrar peso:', error);
+    return { success: false, mensaje: error.message };
+  }
+}
+
+export function obtenerHistorialPeso(usuarioId) {
+  try {
+    const rows = db.prepare(`
+      SELECT peso, imc, tiempo_registro
+      FROM historial_peso
+      WHERE usuario_id = ?
+      ORDER BY tiempo_registro ASC
+    `).all(usuarioId);
+    return rows;
+  } catch (error) {
+    console.error('[usuarios.js] Error al obtener historial de peso:', error);
+    return [];
+  }
+}
+// ...existing code...
 export function guardarAlimentosFavoritos(usuarioId, alimentosIds) {
   try {
     const fecha = new Date().toISOString();

@@ -44,7 +44,6 @@
     calorias = Math.round(tmb);
   }
 
-<<<<<<< HEAD
   function validarCampos() {
     // Validar edad
     if (!edad || edad < 18 || edad > 100) {
@@ -72,12 +71,6 @@
     
     mensajeError = '';
     return true;
-=======
-  function validarPassword(password) {
-    // Al menos 8 caracteres, una mayúscula, una minúscula, un número, sin espacios
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/;
-    return regex.test(password);
->>>>>>> 8e3afabbb7e051aa53317ff24c53ae136c97ab62
   }
 
   async function registrarUsuario() {
