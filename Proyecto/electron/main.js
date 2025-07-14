@@ -5,14 +5,16 @@ import { fileURLToPath } from 'node:url';
 import './db.js'; // Ejecuta el módulo
 import { closeDb } from './db.js'; // Solo closeDb es necesario aquí
 
-// Importa lógica de usuario y preferencias
+// Importa lógica de usuario y funcionalidades
 import {
   registrarUsuario,
   loginUsuario,
   guardarAlimentosFavoritos,
   tienePreferenciasRegistradas,
   registrarComidaDiaria,
-  obtenerAlimentosFavoritos  
+  obtenerAlimentosFavoritos,
+  registrarPeso,
+  obtenerHistorialPeso
 } from './usuarios.js';
 
 // Para __dirname en ES Modules
@@ -61,9 +63,6 @@ app.whenReady().then(() => {
       return { success: false, message: error.message };
     }
   });
-  ipcMain.handle('obtener-alimentos-favoritos', async (event, userId) => {
-    return obtenerAlimentosFavoritos(userId);
-  });
 
   // IPC: Login de usuario
   ipcMain.handle('login-usuario', async (event, username, password) => {
@@ -89,12 +88,29 @@ app.whenReady().then(() => {
       return false;
     }
   });
+
+  // IPC: Registrar comida diaria
+  ipcMain.handle('registrar-comida-diaria', async (event, usuarioId, nombreAlimento, calorias) => {
+    return registrarComidaDiaria(usuarioId, nombreAlimento, calorias);
+  });
+
+  // IPC: Obtener alimentos favoritos
+  ipcMain.handle('obtener-alimentos-favoritos', async (event, userId) => {
+    return obtenerAlimentosFavoritos(userId);
+  });
+
+  // IPC: Registrar peso
+  ipcMain.handle('registrar-peso', async (event, usuarioId, peso, imc) => {
+    return registrarPeso(usuarioId, peso, imc);
+  });
+
+  // IPC: Obtener historial de peso
+  ipcMain.handle('obtener-historial-peso', async (event, usuarioId) => {
+    return obtenerHistorialPeso(usuarioId);
+  });
 });
 
-ipcMain.handle('registrar-comida-diaria', async (event, usuarioId, nombreAlimento, calorias) => {
-  return registrarComidaDiaria(usuarioId, nombreAlimento, calorias);
-});
-
+// Cierre correcto de la aplicación
 app.on('window-all-closed', () => {
   console.log('[main.js] Cerrando app y base de datos...');
   closeDb();
@@ -103,6 +119,7 @@ app.on('window-all-closed', () => {
   }
 });
 
+// Manejo de errores no capturados
 process.on('uncaughtException', (error) => {
   console.error('[main.js] Excepción no capturada:', error);
   app.quit();
