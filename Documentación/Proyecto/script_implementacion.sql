@@ -60,4 +60,3 @@ CREATE TABLE alimentos_favoritos (
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
                 FOREIGN KEY(alimento_id) REFERENCES alimento(id)
             );
-
