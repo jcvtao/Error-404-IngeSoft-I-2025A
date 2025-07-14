@@ -104,6 +104,7 @@
 
       if (resultado.success) {
         window.localStorage.setItem('registroExitoso', 'true');
+        await window.electronAPI.registrarPeso(resultado.userId, peso, imc);
         dispatch('registroExitoso');
       } else {
         mensajeError = resultado.mensaje.includes('ya está en uso')
