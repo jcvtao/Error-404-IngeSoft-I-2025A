@@ -73,6 +73,12 @@
     return true;
   }
 
+  function validarPassword(password) {
+    // Al menos 8 caracteres, una mayúscula, una minúscula, un número, sin espacios
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/;
+    return regex.test(password);
+  }
+
   async function registrarUsuario() {
     mensajeError = '';
 

@@ -26,8 +26,8 @@ CREATE TABLE registro_dieta (
                 cantidad REAL NOT NULL,
                 calorias REAL NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
-                FOREIGN KEY(alimento_id) REFERENCES alimento(id)
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id), -- Cambiado a 'id'
+                FOREIGN KEY(alimento_id) REFERENCES alimento(id) -- Cambiado a 'id'
             );
 
 CREATE TABLE historial_peso (
@@ -37,7 +37,7 @@ CREATE TABLE historial_peso (
                 peso REAL NOT NULL,
                 imc REAL NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id) -- Cambiado a 'id'
             );
 
 CREATE TABLE objetivos (
@@ -49,7 +49,7 @@ CREATE TABLE objetivos (
                 calorias_meta VARCHAR NOT NULL,
                 fecha_inicio DATE NOT NULL,
                 fecha_objetivo DATE NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id) -- Cambiado a 'id'
             );
 
 CREATE TABLE alimentos_favoritos (
@@ -57,6 +57,7 @@ CREATE TABLE alimentos_favoritos (
                 usuario_id INTEGER NOT NULL,
                 alimento_id INTEGER NOT NULL,
                 fecha_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
-                FOREIGN KEY(alimento_id) REFERENCES alimento(id)
+                FOREIGN KEY(usuario_id) REFERENCES usuarios(id), -- Cambiado a 'id'
+                FOREIGN KEY(alimento_id) REFERENCES alimento(id) -- Cambiado a 'id'
             );
+
