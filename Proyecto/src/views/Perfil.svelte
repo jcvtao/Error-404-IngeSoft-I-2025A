@@ -119,7 +119,7 @@
             <text
               x={i / (historial.length - 1) * 360 + 30}
               y="240"
-              transform={`rotate(-90, ${i / (historial.length - 1) * 360 + 30}, 240)`}
+              transform={`rotate(0, ${i / (historial.length - 1) * 360 + 30}, 240)`}
               class="fecha-label"
             >#{i + 1}</text>
           {/each}
