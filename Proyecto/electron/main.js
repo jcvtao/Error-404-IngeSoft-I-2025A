@@ -14,7 +14,8 @@ import {
   registrarComidaDiaria,
   obtenerAlimentosFavoritos,
   registrarPeso,
-  obtenerHistorialPeso
+  obtenerHistorialPeso,
+  obtenerAlimentosPorSeccion
 } from './usuarios.js';
 
 // Para __dirname en ES Modules
@@ -90,8 +91,8 @@ app.whenReady().then(() => {
   });
 
   // IPC: Registrar comida diaria
-  ipcMain.handle('registrar-comida-diaria', async (event, usuarioId, nombreAlimento, calorias) => {
-    return registrarComidaDiaria(usuarioId, nombreAlimento, calorias);
+  ipcMain.handle('registrar-comida-diaria', async (event, usuarioId, nombreAlimento, calorias, seccion) => {
+    return registrarComidaDiaria(usuarioId, nombreAlimento, calorias, seccion);
   });
 
   // IPC: Obtener alimentos favoritos
@@ -107,6 +108,11 @@ app.whenReady().then(() => {
   // IPC: Obtener historial de peso
   ipcMain.handle('obtener-historial-peso', async (event, usuarioId) => {
     return obtenerHistorialPeso(usuarioId);
+  });
+
+  // IPC: Obtener alimentos por sección
+  ipcMain.handle('obtener-alimentos-por-seccion', async (event, usuarioId) => {
+    return obtenerAlimentosPorSeccion(usuarioId);
   });
 });
 

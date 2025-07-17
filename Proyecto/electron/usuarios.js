@@ -67,7 +67,6 @@ export async function loginUsuario(username, password) {
         throw error;
     }
 }
-// ...existing code...
 
 export function registrarPeso(usuarioId, peso, imc) {
   try {
@@ -101,7 +100,7 @@ export function obtenerHistorialPeso(usuarioId) {
     return [];
   }
 }
-// ...existing code...
+
 export function guardarAlimentosFavoritos(usuarioId, alimentosIds) {
   try {
     const fecha = new Date().toISOString();
@@ -139,7 +138,6 @@ export function tienePreferenciasRegistradas(usuarioId) {
 
 export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
   try {
-    // Verificar si el alimento ya existe en la tabla 'alimento'
     let alimento = db.prepare(`
       SELECT id FROM alimento WHERE nombre_alimento = ?
     `).get(nombreAlimento);
@@ -147,22 +145,20 @@ export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
     let alimentoId;
 
     if (!alimento) {
-      // Insertar nuevo alimento en la tabla alimento
       const insert = db.prepare(`
         INSERT INTO alimento (nombre_alimento, gramos, calorias)
         VALUES (?, ?, ?)
       `);
-      const result = insert.run(nombreAlimento, 100, calorias); // 100g por defecto
+      const result = insert.run(nombreAlimento, 100, calorias);
       alimentoId = result.lastInsertRowid;
     } else {
       alimentoId = alimento.id;
     }
 
-    // Insertar en registro_dieta
     db.prepare(`
       INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, tiempo_registro)
       VALUES (?, ?, ?, ?, datetime('now'))
-    `).run(usuarioId, alimentoId, 1, calorias); // Cantidad = 1 por defecto
+    `).run(usuarioId, alimentoId, 1, calorias);
 
     return { success: true };
   } catch (error) {
@@ -184,5 +180,28 @@ export function obtenerAlimentosFavoritos(usuarioId) {
   } catch (error) {
     console.error("[usuarios.js] Error al obtener alimentos favoritos:", error);
     return [];
+  }
+}
+
+export function obtenerAlimentosPorSeccion(usuarioId) {
+  try {
+    const rows = db.prepare(`
+      SELECT seccion, alimento.nombre_alimento AS nombre, registro_dieta.calorias
+      FROM registro_dieta
+      JOIN alimento ON alimento.id = registro_dieta.alimento_id
+      WHERE registro_dieta.usuario_id = ? AND DATE(registro_dieta.tiempo_registro) = DATE('now')
+      ORDER BY registro_dieta.tiempo_registro DESC
+    `).all(usuarioId);
+
+    // Agrupa por sección
+    const agrupado = {};
+    for (const row of rows) {
+      if (!agrupado[row.seccion]) agrupado[row.seccion] = [];
+      agrupado[row.seccion].push({ nombre: row.nombre, calorias: row.calorias });
+    }
+    return agrupado;
+  } catch (error) {
+    console.error("[usuarios.js] Error al obtener alimentos por sección:", error);
+    return {};
   }
 }
