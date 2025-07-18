@@ -111,8 +111,8 @@ app.whenReady().then(() => {
   });
 
   // IPC: Obtener alimentos por sección
-  ipcMain.handle('obtener-alimentos-por-seccion', async (event, usuarioId) => {
-    return obtenerAlimentosPorSeccion(usuarioId);
+  ipcMain.handle('obtener-alimentos-por-seccion', async (event, usuarioId, seccion) => {
+    return obtenerAlimentosPorSeccion(usuarioId, seccion);
   });
 });
 

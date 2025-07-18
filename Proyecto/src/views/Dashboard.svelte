@@ -27,6 +27,22 @@
     size: 1.5 + Math.random() * 2
   }));
 
+  async function cargarAlimentosRegistrados() {
+    try {
+      for (let seccion of secciones) {
+        const alimentos = await window.electronAPI.obtenerAlimentosPorSeccion(usuarioActual.id, seccion.id);
+        seccion.alimentos = alimentos || [];
+        console.log(`Alimentos en ${seccion.nombre}:`, seccion.alimentos, seccion.alimentos.length);
+        // Sumar calorías consumidas
+        for (let alimento of seccion.alimentos) {
+          caloriasConsumidas += alimento.calorias;
+        }
+      }
+    } catch (e) {
+      console.error("Error al cargar alimentos registrados:", e);
+    }
+  }
+
   async function cargarAlimentosFavoritos() {
     try {
       const respuesta = await window.electronAPI.obtenerAlimentosFavoritos(usuarioActual.id);
@@ -47,13 +63,13 @@
   }
 
   function agregarAlimento(alimento) {
-    console.log('Agregando alimento:', alimento.detail);
     seccionActiva.alimentos.push(alimento);
     caloriasConsumidas += alimento.detail.calorias;
     cerrarModal();
   }
 
   onMount(() => {
+    cargarAlimentosRegistrados();
     cargarAlimentosFavoritos();
   });
 </script>
@@ -85,11 +101,11 @@
       </div>
 
       <!-- Secciones -->
-      {#each secciones as seccion, i}
+      {#each secciones as seccion}
         <div class="card mb-4 p-3">
           <h5 class="card-header fw-bold">{seccion.nombre}</h5>
           {#if seccion.alimentos.length === 0}
-            <p class="text-muted">Aún no has agregado alimentos.</p>
+            <p class="text-muted">Aún no has registrado alimentos.</p>
           {:else}
             <ul>
               {#each seccion.alimentos as alimento}
