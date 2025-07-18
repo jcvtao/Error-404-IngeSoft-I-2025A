@@ -12,9 +12,10 @@
   let caloriasConsumidas = 0;
 
   let secciones = [
-    { nombre: 'Desayuno', alimentos: [] },
-    { nombre: 'Almuerzo', alimentos: [] },
-    { nombre: 'Cena', alimentos: [] }
+    { nombre: 'Desayuno 🍳', alimentos: [] },
+    { nombre: 'Almuerzo 🍚', alimentos: [] },
+    { nombre: 'Cena 🍲', alimentos: [] },
+    { nombre: 'Snacks 🍎', alimentos: [] }
   ];
 
   // Fondo decorativo (opcional)
@@ -49,11 +50,6 @@
     seccionActiva.alimentos.push(alimento);
     caloriasConsumidas += alimento.calorias;
     cerrarModal();
-  }
-
-  function agregarSeccion() {
-    const nombre = prompt('Nombre de la nueva sección:');
-    if (nombre) secciones = [...secciones, { nombre, alimentos: [] }];
   }
 
   onMount(() => {
@@ -104,14 +100,6 @@
             Agregar alimento
           </button>
         </div>
-
-        {#if i === 0 || i === 1}
-          <div class="text-center mb-3">
-            <button class="btn btn-outline-secondary btn-sm" on:click={agregarSeccion}>
-              + Agregar nueva sección
-            </button>
-          </div>
-        {/if}
       {/each}
 
       <div class="alert alert-info text-center mt-4" role="alert">

@@ -72,3 +72,18 @@ Para iniciar la aplicación en modo desarrollo (frontend con Vite, backend con E
 ```bash
 npm run electron-dev
 ```
+
+## Instrucciones Adicionales
+
+### ESLinter
+
+El proyecto cuenta con el linter ESLinter con el plugin para Svelte. Para instalarlo se debe ejecutar el siguiente comando:
+
+```bash
+npm install --save-dev eslint eslint-plugin-svelte3
+```
+
+Para correr el lint se debe ejecutar el siguiente comando:
+```bash
+npm run lint
+```

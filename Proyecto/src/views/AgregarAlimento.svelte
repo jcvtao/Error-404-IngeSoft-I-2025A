@@ -43,9 +43,14 @@
     gramos = '';
   }
 
-  function guardar() {
-    const calorias = Math.round((seleccionado.calorias * gramos) / 100);
-    dispatch('guardar', { nombre: seleccionado.nombre, calorias });
+  async function guardar() {
+    try {
+      const calorias = Math.round((seleccionado.calorias * gramos) / 100);
+      await window.electronAPI.registrarComidaDiaria(usuarioId, seleccionado.nombre, calorias);
+      dispatch('guardar', { nombre: seleccionado.nombre, calorias });
+    } catch (error) {
+      console.error('Error registrando alimento:', error);
+    }
   }
 </script>
 
