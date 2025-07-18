@@ -60,8 +60,15 @@
     </form>
 
     {#if mensaje}
-      <div class="alert alert-info py-2">{mensaje}</div>
-    {/if}
+  <div class="alert alert-info py-2 position-relative" role="alert">
+    <span>{mensaje}</span>
+    <button
+      class="btn-close position-absolute top-0 end-0 mt-2 me-2"
+      aria-label="Cerrar"
+      on:click={() => mensaje = ''}
+    ></button>
+  </div>
+{/if}
 
     {#if historial.length === 0}
       <p class="text-muted">Aún no hay registros de peso.</p>
@@ -90,42 +97,49 @@
       </div>
     {/if}
 
-    {#if historial.length > 1}
+    {#if historial.length >= 1}
       <h5 class="mt-4 mb-2">Gráfica de evolución</h5>
       <div class="grafica-container">
         <svg width="100%" height="250" viewBox="0 0 400 250">
-          {#each Array.from({ length: 12 }, (_, i) => 30 + i * 20) as peso}
-            <line x1="30" y1={230 - (peso - 30)} x2="390" y2={230 - (peso - 30)} class="linea-guia" />
-            <text x="5" y={233 - (peso - 30)} class="eje-y-label">{peso}</text>
+          {#each Array.from({ length: 9 }, (_, i) => 40 + i * 10) as peso}
+            <line
+              x1="30"
+              y1={230 - (peso - 40) * 2}
+              x2="390"
+              y2={230 - (peso - 40) * 2}
+              class="linea-guia"
+            />
+            <text x="5" y={233 - (peso - 40) * 2} class="eje-y-label">{peso}</text>
           {/each}
 
           {#each historial as entry, i (entry.tiempo_registro)}
             {#if i > 0}
               <line
                 x1={(i - 1) / (historial.length - 1) * 360 + 30}
-                y1={230 - (historial[i - 1].peso - 30)}
+                y1={230 - (historial[i - 1].peso - 40) * 2}
                 x2={i / (historial.length - 1) * 360 + 30}
-                y2={230 - (entry.peso - 30)}
+                y2={230 - (entry.peso - 40) * 2}
                 stroke="#ffc107"
                 stroke-width="2"
               />
             {/if}
+
+            <!-- Ajustar posición X si solo hay un punto -->
             <circle
-              cx={i / (historial.length - 1) * 360 + 30}
-              cy={230 - (entry.peso - 30)}
+              cx={historial.length === 1 ? 200 : i / (historial.length - 1) * 360 + 30}
+              cy={230 - (entry.peso - 40) * 2}
               r="4"
               fill="#007bff"
             />
             <text
-              x={i / (historial.length - 1) * 360 + 30}
+              x={historial.length === 1 ? 200 : i / (historial.length - 1) * 360 + 30}
               y="240"
-              transform={`rotate(0, ${i / (historial.length - 1) * 360 + 30}, 240)`}
               class="fecha-label"
             >#{i + 1}</text>
           {/each}
         </svg>
       </div>
-      <div class="text-muted small">* El eje Y inicia en 30 kg y escala hasta 250 kg</div>
+      <div class="text-muted small">* El eje Y va de 40 kg a 120 kg</div>
     {/if}
   </div>
 </div>

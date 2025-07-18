@@ -9,9 +9,9 @@
   let nombre = '';
   let password = '';
   let sexo = '';
-  let edad = 0;
-  let peso = 0;
-  let altura = 0;
+  let edad = null;
+  let peso = null;
+  let altura = null;
   let objetivo = '';
   let intensidad = 0;
   let calorias = 0;
@@ -96,9 +96,11 @@
       peso: Number(peso),
       altura: Number(altura),
       objetivo,
-      intensidad: Number(intensidad)
+      intensidad: Number(intensidad), 
+      calorias_sugeridas: Number(calorias),
     };
-
+    console.log(usuario);
+    
     try {
       const resultado = await window.electronAPI.registrarUsuario(usuario);
 
@@ -245,8 +247,9 @@
           min="18"
           max="100"
           step="1"
-          bind:value={edad}
-          placeholder="Ingresa tu edad en años"
+          value={edad ?? ''}
+          on:input={(e) => edad = +e.target.value}
+          placeholder="Ingresa tu edad"
         />
         {#if edad && (edad < 18 || edad > 100)}
           <div class="text-danger mt-1 small">La edad debe estar entre 18 y 100 años.</div>
@@ -263,7 +266,8 @@
         min="40"
         max="120"
         step="0.1"
-        bind:value={peso}
+        value={peso ?? ''}
+        on:input={(e) => peso = +e.target.value}
         placeholder="Ingresa tu peso en Kg"
           />
           <span class="input-group-text">kg</span>
@@ -283,8 +287,9 @@
         min="140"
         max="250"
         step="1"
-        bind:value={altura}
-        placeholder="Ingresa tu altura en CM"
+        value={altura ?? ''}
+        on:input={(e) => altura = +e.target.value}
+        placeholder="Ingresa tu altura en cm"
           />
           <span class="input-group-text">cm</span>
         </div>

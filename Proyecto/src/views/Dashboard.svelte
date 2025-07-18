@@ -8,7 +8,7 @@
   let mostrarModal = false;
   let seccionActiva = null;
 
-  let caloriasSugeridas = 2200; // TODO
+  let caloriasSugeridas = usuarioActual.calorias_sugeridas; // TODO
   let caloriasConsumidas = 0;
 
   let secciones = [

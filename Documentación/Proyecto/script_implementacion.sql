@@ -9,6 +9,7 @@ CREATE TABLE usuarios (
                 altura REAL NOT NULL,
                 objetivo VARCHAR NOT NULL,
                 intensidad VARCHAR NOT NULL,
+                calorias_sugeridas REAL NOT NULL,
                 fecha_registro DATE NOT NULL
             );
 

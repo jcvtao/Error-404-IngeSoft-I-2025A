@@ -5,7 +5,6 @@ export async function registrarUsuario(usuario) {
     // Validaciones básicas del usuario
     try {
         const usuarioExistente = db.prepare('SELECT id FROM usuarios WHERE username = ?').get(usuario.username);
-        console.log(usuarioExistente);
         
         if (usuarioExistente) {
             return { success: false, mensaje: 'El nombre de usuario ya está en uso.' };
@@ -17,13 +16,12 @@ export async function registrarUsuario(usuario) {
 
     // Si todas las validaciones pasan, procede con el registro
     try {
-        // Genera un hash de la contraseña antes de guardarla
-        const hashedPassword = bcrypt.hashSync(usuario.password, 10); // 10 es el costo del salt, puedes ajustarlo
+        const hashedPassword = bcrypt.hashSync(usuario.password, 10); 
+        const fechaRegistro = new Date().toISOString();
 
         const info = db.prepare(`
-            INSERT INTO usuarios (nombre, sexo, username, password, edad, peso, altura, objetivo, intensidad, fecha_registro)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
+            INSERT INTO usuarios (nombre, sexo, username, password, edad, peso, altura, objetivo, intensidad, calorias_sugeridas, fecha_registro)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
             usuario.nombre,
             usuario.sexo,
             usuario.username,
@@ -33,7 +31,8 @@ export async function registrarUsuario(usuario) {
             usuario.altura,
             usuario.objetivo,
             usuario.intensidad,
-            new Date().toISOString()
+            usuario.calorias_sugeridas,
+            fechaRegistro
         );
 
         console.log(`[usuarios.js] Usuario registrado con ID: ${info.lastInsertRowid}`);
