@@ -136,7 +136,7 @@ export function tienePreferenciasRegistradas(usuarioId) {
   }
 }
 
-export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
+export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias, seccion) {
   try {
     let alimento = db.prepare(`
       SELECT id FROM alimento WHERE nombre_alimento = ?
@@ -155,10 +155,14 @@ export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
       alimentoId = alimento.id;
     }
 
+    if (!seccion) {
+      throw new Error('Sección no especificada');
+    }
+
     db.prepare(`
-      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, tiempo_registro)
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `).run(usuarioId, alimentoId, 1, calorias);
+      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, seccion, tiempo_registro)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))
+    `).run(usuarioId, alimentoId, 1, calorias, seccion);
 
     return { success: true };
   } catch (error) {

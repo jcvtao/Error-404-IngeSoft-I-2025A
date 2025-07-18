@@ -49,6 +49,7 @@ function initializeDb() {
                 alimento_id INTEGER NOT NULL,
                 cantidad REAL NOT NULL,
                 calorias REAL NOT NULL,
+                seccion INTEGER NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
                 FOREIGN KEY(alimento_id) REFERENCES alimento(id)

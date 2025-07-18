@@ -13,8 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   tienePreferencias: (userId) =>
     ipcRenderer.invoke('tiene-preferencias', userId),
 
-  registrarComidaDiaria: (usuarioId, nombreAlimento, calorias) =>
-    ipcRenderer.invoke('registrar-comida-diaria', usuarioId, nombreAlimento, calorias),
+  registrarComidaDiaria: (usuarioId, nombreAlimento, calorias, seccion) =>
+    ipcRenderer.invoke('registrar-comida-diaria', usuarioId, nombreAlimento, calorias, seccion),
 
   obtenerAlimentosFavoritos: (usuarioId) =>
     ipcRenderer.invoke('obtener-alimentos-favoritos', usuarioId),

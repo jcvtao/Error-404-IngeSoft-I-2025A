@@ -8,14 +8,14 @@
   let mostrarModal = false;
   let seccionActiva = null;
 
-  let caloriasSugeridas = 2200;
+  let caloriasSugeridas = 2200; // TODO
   let caloriasConsumidas = 0;
 
   let secciones = [
-    { nombre: 'Desayuno 🍳', alimentos: [] },
-    { nombre: 'Almuerzo 🍚', alimentos: [] },
-    { nombre: 'Cena 🍲', alimentos: [] },
-    { nombre: 'Snacks 🍎', alimentos: [] }
+    { id: 1, nombre: 'Desayuno 🍳', alimentos: [] },
+    { id: 2, nombre: 'Almuerzo 🍚', alimentos: [] },
+    { id: 3, nombre: 'Cena 🍲', alimentos: [] },
+    { id: 4, nombre: 'Snacks 🍎', alimentos: [] }
   ];
 
   // Fondo decorativo (opcional)
@@ -47,8 +47,9 @@
   }
 
   function agregarAlimento(alimento) {
+    console.log('Agregando alimento:', alimento.detail);
     seccionActiva.alimentos.push(alimento);
-    caloriasConsumidas += alimento.calorias;
+    caloriasConsumidas += alimento.detail.calorias;
     cerrarModal();
   }
 
@@ -111,6 +112,7 @@
   {#if mostrarModal}
     <ModalAgregarAlimento
     usuarioId={usuarioActual.id}
+    seccion={seccionActiva.id}
     on:cerrar={cerrarModal}
     on:guardar={agregarAlimento}
   />

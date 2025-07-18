@@ -7,7 +7,7 @@
   let seleccionado = null;
   let gramos = '';
 
-  export let usuarioId;
+  export let usuarioId, seccion;
 
   onMount(async () => {
     try {
@@ -46,8 +46,9 @@
   async function guardar() {
     try {
       const calorias = Math.round((seleccionado.calorias * gramos) / 100);
-      await window.electronAPI.registrarComidaDiaria(usuarioId, seleccionado.nombre, calorias);
-      dispatch('guardar', { nombre: seleccionado.nombre, calorias });
+      console.log(seccion, typeof seccion);
+      await window.electronAPI.registrarComidaDiaria(usuarioId, seleccionado.nombre, calorias, seccion);
+      dispatch('guardar', { nombre: seleccionado.nombre, calorias, seccion});
     } catch (error) {
       console.error('Error registrando alimento:', error);
     }
