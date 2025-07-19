@@ -18,16 +18,7 @@
     { id: 2, nombre: 'Almuerzo 🍚', alimentos: [], calorias: 0 },
     { id: 3, nombre: 'Cena 🍲', alimentos: [], calorias: 0 },
     { id: 4, nombre: 'Snacks 🍎', alimentos: [], calorias: 0 }
-  ];
-
-  // Fondo decorativo
-  let emojis = ['🥦', '🥕', '🌽', '🥬', '🧄', '🍞', '🍗', '🫐', '🍇', '🥚'];
-  let fondo = Array.from({ length: 50 }, () => ({
-    emoji: emojis[Math.floor(Math.random() * emojis.length)],
-    top: Math.random() * 100,
-    left: Math.random() * 100,
-    size: 1.5 + Math.random() * 2
-  }));
+  ];  
 
   // Función para calcular el total de calorías
   function calcularCaloriasTotal() {
@@ -112,15 +103,6 @@
     }
   });
 </script>
-
-<!-- Fondo -->
-<div class="dashboard-fondo">
-  {#each fondo as item (item)}
-    <div
-      class="emoji-fondo"
-      style="top: {item.top}%; left: {item.left}%; font-size: {item.size}rem"
-    >{item.emoji}</div>
-  {/each}
 
   <div class="contenido-card card shadow-lg rounded-4">
     <div class="contenido-scroll p-4">
@@ -217,7 +199,7 @@
       on:guardar={agregarAlimento}
     />
   {/if}
-</div>
+
 
 <style>
   .dashboard-fondo {
@@ -304,19 +286,12 @@
   
   .alimento-item {
     border-left: 4px solid #ffc107;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,249,250,0.9) 100%);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,193,7,0.1);
+    border: 1px solid rgba(172, 171, 169, 0.1);
   }
   
   .alimento-item:hover {
-    transform: translateX(8px) scale(1.02);
-    box-shadow: 
-      0 6px 16px rgba(255,193,7,0.2),
-      0 2px 8px rgba(0,0,0,0.1);
-    border-left-color: #ff9800;
-    background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,248,225,0.9) 100%);
+    border-color: #ffc107;
+    background-color: #fffbee !important;
   }
   
   .progress-bar {
@@ -356,13 +331,6 @@
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  .card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 
-      0 12px 24px rgba(0,0,0,0.15),
-      0 4px 8px rgba(255,193,7,0.2) !important;
   }
   
   /* Scrollbar personalizado */

@@ -78,6 +78,8 @@ export function registrarPeso(usuarioId, peso, imc) {
       VALUES (?, ?, ?, ?, datetime('now'))
     `).run(usuarioId, numero_registros, peso, imc);
 
+    db.prepare(`UPDATE usuarios SET peso = ? WHERE id = ?`).run(peso, usuarioId);
+
     return { success: true };
   } catch (error) {
     console.error('[usuarios.js] Error al registrar peso:', error);

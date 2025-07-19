@@ -87,6 +87,6 @@
     <Preferencias usuarioActual={usuarioActual} on:finalizado={() => mostrarPreferencias = false} />
   {/if}
 {:else if vista === 'perfil'}
-  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarInicio} />
+  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarLogin} />
   <Perfil usuarioActual={usuarioActual} />
 {/if}

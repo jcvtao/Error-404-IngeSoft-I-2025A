@@ -55,7 +55,7 @@
   $: tendencia = obtenerTendencia();
 </script>
 
-<div class="contenedor">
+<div class="contenedor card mt-4 shadow-lg rounded-4">
   <!-- Header con estadísticas principales -->
   <div class="header-stats">
     <div class="stat-card peso-actual">
@@ -201,7 +201,7 @@
   <!-- Historial -->
   {#if historial.length > 0}
     <div class="historial-card">
-      <h3 class="section-title">Historial completo</h3>
+      <h2 class="section-title">Historial</h2>
       
       <div class="tabla-container">
         <div class="tabla-scroll">
@@ -452,7 +452,7 @@
   }
 
   .data-line {
-    filter: drop-shadow(0 2px 4px rgba(79, 70, 229, 0.2));
+    filter: drop-shadow(0 2px 4px ffc107);
   }
 
   .data-point {
@@ -460,10 +460,6 @@
     cursor: pointer;
   }
 
-  .data-point:hover {
-    fill: #7c3aed;
-    transform: scale(1.2);
-  }
 
   .point-label {
     font-size: 10px;
@@ -495,12 +491,12 @@
   }
 
   .registro-item:hover {
-    background: #f8fafc;
+    background-color: #fff3cd !important;
   }
 
   .registro-numero {
     font-weight: 700;
-    color: #4f46e5;
+    color: #ffc107;
     font-size: 0.9rem;
   }
 
