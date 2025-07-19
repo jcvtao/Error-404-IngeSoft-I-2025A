@@ -2,12 +2,14 @@
   import { onMount } from 'svelte';
   import ModalAgregarAlimento from './AgregarAlimento.svelte';
   import ModalEliminarAlimento from './EliminarAlimento.svelte';
+  import EditarAlimento from './EditarAlimento.svelte';
 
   export let usuarioActual;
 
   let alimentosFavoritos = [];
   let mostrarModal = false;
   let mostrarModalEliminar = false;
+  let mostrarModalEditar = false;
   let seccionActiva = null;
   let cargando = true;
   let error = null;
@@ -117,6 +119,26 @@
     }
   }
 
+  let alimentoAEditar = null;
+  let seccionAEditar = null;
+
+  function abrirModalEditar(alimento, seccion) {
+    alimentoAEditar = alimento;
+    seccionAEditar = seccion;
+    mostrarModalEditar = true;
+  }
+
+  function cerrarModalEditar() {
+    mostrarModalEditar = false;
+    alimentoAEditar = null;
+    seccionAEditar = null;
+  }
+
+  async function confirmarEditar() {
+    await cargarAlimentosRegistrados();
+    cerrarModalEditar();
+  }
+
   // Función para obtener el porcentaje de calorías consumidas
   $: porcentajeConsumo = Math.min((caloriasConsumidas / caloriasSugeridas) * 100, 100);
   
@@ -200,7 +222,10 @@
                           </small>
                         </div>
                         <div class="ms-2">
-                          <button class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                          <button
+                            class="btn btn-sm btn-outline-primary me-1"
+                            title="Editar" on:click={() => abrirModalEditar(alimento, seccion)}
+                          >
                             <i class="bi bi-pencil"></i>
                           </button>
                           <button 
@@ -247,6 +272,15 @@
       seccion={seccionAEliminar}
       on:cancelar={cerrarModalEliminar}
       on:confirmar={confirmarEliminar}
+    />
+  {/if}
+
+  {#if mostrarModalEditar}
+    <EditarAlimento
+      alimento={alimentoAEditar}
+      seccion={seccionAEditar}
+      on:cancelar={cerrarModalEditar}
+      on:guardar={confirmarEditar}
     />
   {/if}
 

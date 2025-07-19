@@ -25,6 +25,7 @@ CREATE TABLE registro_dieta (
                 usuario_id INTEGER NOT NULL,
                 alimento_id INTEGER NOT NULL,
                 cantidad REAL NOT NULL,
+                gramos REAL NOT NULL,
                 calorias REAL NOT NULL,
                 seccion INTEGER NOT NULL,
                 tiempo_registro DATETIME NOT NULL,

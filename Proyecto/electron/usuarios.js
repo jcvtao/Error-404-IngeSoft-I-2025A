@@ -137,7 +137,7 @@ export function tienePreferenciasRegistradas(usuarioId) {
   }
 }
 
-export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias, seccion) {
+export function registrarComidaDiaria(usuarioId, nombreAlimento, gramos, calorias, seccion) {
   try {
     let alimento = db.prepare(`
       SELECT id FROM alimento WHERE nombre_alimento = ?
@@ -161,9 +161,9 @@ export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias, secci
     }
 
     db.prepare(`
-      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, seccion, tiempo_registro)
-      VALUES (?, ?, ?, ?, ?, datetime('now'))
-    `).run(usuarioId, alimentoId, 1, calorias, seccion);
+      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, gramos, calorias, seccion, tiempo_registro)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(usuarioId, alimentoId, 1, gramos, calorias, seccion);
 
     return { success: true };
   } catch (error) {
@@ -192,7 +192,7 @@ export function obtenerAlimentosPorSeccion(usuarioId, seccion) {
   const stmt = db.prepare(`
     SELECT registro_dieta.id, alimento.nombre_alimento, registro_dieta.cantidad, 
            registro_dieta.calorias, registro_dieta.seccion, 
-           registro_dieta.tiempo_registro
+           registro_dieta.tiempo_registro, registro_dieta.gramos
     FROM registro_dieta
     JOIN alimento ON registro_dieta.alimento_id = alimento.id
     WHERE registro_dieta.usuario_id = ?
@@ -200,6 +200,32 @@ export function obtenerAlimentosPorSeccion(usuarioId, seccion) {
     ORDER BY registro_dieta.tiempo_registro DESC
   `);
   return stmt.all(usuarioId, seccion);
+}
+
+export function editarRegistroDieta(registroId, gramos, seccion) {
+  try {
+    let caloriasAlimento = db.prepare(`
+      SELECT calorias FROM alimento WHERE alimento.id = (SELECT alimento_id FROM registro_dieta WHERE registro_dieta.id = ?);
+    `).get(registroId);
+
+    if (!caloriasAlimento) {
+      throw new Error('Alimento no encontrado');
+    }
+
+    const calorias = Math.round((caloriasAlimento.calorias * gramos) / 100);
+    console.log(caloriasAlimento, calorias, seccion);
+
+    db.prepare(`
+      UPDATE registro_dieta
+      SET calorias = ?, seccion = ?, gramos = ?
+      WHERE id = ?
+    `).run(calorias, seccion, gramos, registroId);
+  }
+  catch (error) {
+    console.error("[usuarios.js] Error al editar registro de dieta:", error);
+    return { success: false, mensaje: error.message };
+  }
+  return { success: true };
 }
 
 export function eliminarRegistroDieta(registroId) {
