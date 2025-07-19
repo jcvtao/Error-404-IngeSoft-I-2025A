@@ -190,7 +190,7 @@ export function obtenerAlimentosFavoritos(usuarioId) {
 export function obtenerAlimentosPorSeccion(usuarioId, seccion) {
   try {
     const rows = db.prepare(`
-      SELECT seccion, alimento.nombre_alimento AS nombre, registro_dieta.calorias
+      SELECT alimento.nombre_alimento AS nombre, registro_dieta.calorias
       FROM registro_dieta
       JOIN alimento ON alimento.id = registro_dieta.alimento_id
       WHERE registro_dieta.usuario_id = ? AND seccion = ? AND DATE(registro_dieta.tiempo_registro) = DATE('now')
