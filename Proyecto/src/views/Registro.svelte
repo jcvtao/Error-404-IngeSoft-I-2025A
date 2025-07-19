@@ -2,6 +2,7 @@
   import CaloriasSugeridas from './CaloriasSugeridas.svelte';
   import { createEventDispatcher } from 'svelte';
 
+
   const dispatch = createEventDispatcher();
 
   let paso = 1;
