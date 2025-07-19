@@ -145,12 +145,6 @@ import { onMount } from 'svelte';
   // Mantener el color original de la barra de progreso
   $: colorBarra = 'bg-warning';
 
-  onMount(() => {
-    if (usuarioActual?.id) {
-      cargarAlimentosRegistrados();
-      cargarAlimentosFavoritos();
-    }
-  });
   let notificaciones = [];
 
   function cerrarNotificacion(id) {
@@ -163,34 +157,37 @@ import { onMount } from 'svelte';
     setTimeout(() => cerrarNotificacion(id), 6000);
   }
 
-  function filtrarPorSeccion(seccion) {
-    return alimentosFavoritos.filter(a => a.seccion === seccion);
-  }
-
+  // Función corregida para verificar faltantes
   function verificarFaltantes() {
     const ahora = new Date();
     const hora = ahora.getHours();
 
-    const desayuno = filtrarPorSeccion("desayuno");
-    const almuerzo = filtrarPorSeccion("almuerzo");
-    const cena = filtrarPorSeccion("cena");
+    // Buscar las secciones por ID en lugar de usar alimentosFavoritos
+    const desayuno = secciones.find(s => s.id === 1); // Desayuno
+    const almuerzo = secciones.find(s => s.id === 2);  // Almuerzo
+    const cena = secciones.find(s => s.id === 3);      // Cena
 
-    if (hora >= 9 && desayuno.length === 0) {
+    // Verificar si cada sección tiene alimentos registrados
+    if (hora >= 9 && desayuno && desayuno.alimentos.length === 0) {
       mostrarNotificacion("No has registrado tu desayuno 🍳");
     }
 
-    if (hora >= 14 && almuerzo.length === 0) {
+    if (hora >= 14 && almuerzo && almuerzo.alimentos.length === 0) {
       mostrarNotificacion("No has registrado tu almuerzo 🥗");
     }
 
-    if (hora >= 20 && cena.length === 0) {
+    if (hora >= 20 && cena && cena.alimentos.length === 0) {
       mostrarNotificacion("No has registrado tu cena 🍝");
     }
   }
 
   onMount(async () => {
-    await cargarAlimentosRegistrados();
-    verificarFaltantes();
+    if (usuarioActual?.id) {
+      await cargarAlimentosRegistrados();
+      await cargarAlimentosFavoritos();
+      // Verificar faltantes después de cargar los datos
+      verificarFaltantes();
+    }
   });
 
 </script>
