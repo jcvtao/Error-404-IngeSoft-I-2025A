@@ -55,7 +55,7 @@
   $: tendencia = obtenerTendencia();
 </script>
 
-<div class="contenedor card mt-4 shadow-lg rounded-4">
+<div class="contenedor card mt-4 mb-4 shadow-lg rounded-4">
   <!-- Header con estadísticas principales -->
   <div class="header-stats">
     <div class="stat-card peso-actual">
