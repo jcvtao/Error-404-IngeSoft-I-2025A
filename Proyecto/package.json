@@ -16,7 +16,6 @@
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",
     "test:watch": "vitest --watch"
-
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
