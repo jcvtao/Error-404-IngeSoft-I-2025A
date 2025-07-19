@@ -5,7 +5,6 @@ export async function registrarUsuario(usuario) {
     // Validaciones básicas del usuario
     try {
         const usuarioExistente = db.prepare('SELECT id FROM usuarios WHERE username = ?').get(usuario.username);
-        console.log(usuarioExistente);
         
         if (usuarioExistente) {
             return { success: false, mensaje: 'El nombre de usuario ya está en uso.' };
@@ -17,13 +16,12 @@ export async function registrarUsuario(usuario) {
 
     // Si todas las validaciones pasan, procede con el registro
     try {
-        // Genera un hash de la contraseña antes de guardarla
-        const hashedPassword = bcrypt.hashSync(usuario.password, 10); // 10 es el costo del salt, puedes ajustarlo
+        const hashedPassword = bcrypt.hashSync(usuario.password, 10); 
+        const fechaRegistro = new Date().toISOString();
 
         const info = db.prepare(`
-            INSERT INTO usuarios (nombre, sexo, username, password, edad, peso, altura, objetivo, intensidad, fecha_registro)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
+            INSERT INTO usuarios (nombre, sexo, username, password, edad, peso, altura, objetivo, intensidad, calorias_sugeridas, fecha_registro)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
             usuario.nombre,
             usuario.sexo,
             usuario.username,
@@ -33,7 +31,8 @@ export async function registrarUsuario(usuario) {
             usuario.altura,
             usuario.objetivo,
             usuario.intensidad,
-            new Date().toISOString()
+            usuario.calorias_sugeridas,
+            fechaRegistro
         );
 
         console.log(`[usuarios.js] Usuario registrado con ID: ${info.lastInsertRowid}`);
@@ -78,6 +77,8 @@ export function registrarPeso(usuarioId, peso, imc) {
       INSERT INTO historial_peso (usuario_id, numero_registros, peso, imc, tiempo_registro)
       VALUES (?, ?, ?, ?, datetime('now'))
     `).run(usuarioId, numero_registros, peso, imc);
+
+    db.prepare(`UPDATE usuarios SET peso = ? WHERE id = ?`).run(peso, usuarioId);
 
     return { success: true };
   } catch (error) {
@@ -136,7 +137,7 @@ export function tienePreferenciasRegistradas(usuarioId) {
   }
 }
 
-export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
+export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias, seccion) {
   try {
     let alimento = db.prepare(`
       SELECT id FROM alimento WHERE nombre_alimento = ?
@@ -155,10 +156,14 @@ export function registrarComidaDiaria(usuarioId, nombreAlimento, calorias) {
       alimentoId = alimento.id;
     }
 
+    if (!seccion) {
+      throw new Error('Sección no especificada');
+    }
+
     db.prepare(`
-      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, tiempo_registro)
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `).run(usuarioId, alimentoId, 1, calorias);
+      INSERT INTO registro_dieta (usuario_id, alimento_id, cantidad, calorias, seccion, tiempo_registro)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))
+    `).run(usuarioId, alimentoId, 1, calorias, seccion);
 
     return { success: true };
   } catch (error) {
@@ -183,25 +188,16 @@ export function obtenerAlimentosFavoritos(usuarioId) {
   }
 }
 
-export function obtenerAlimentosPorSeccion(usuarioId) {
-  try {
-    const rows = db.prepare(`
-      SELECT seccion, alimento.nombre_alimento AS nombre, registro_dieta.calorias
-      FROM registro_dieta
-      JOIN alimento ON alimento.id = registro_dieta.alimento_id
-      WHERE registro_dieta.usuario_id = ? AND DATE(registro_dieta.tiempo_registro) = DATE('now')
-      ORDER BY registro_dieta.tiempo_registro DESC
-    `).all(usuarioId);
-
-    // Agrupa por sección
-    const agrupado = {};
-    for (const row of rows) {
-      if (!agrupado[row.seccion]) agrupado[row.seccion] = [];
-      agrupado[row.seccion].push({ nombre: row.nombre, calorias: row.calorias });
-    }
-    return agrupado;
-  } catch (error) {
-    console.error("[usuarios.js] Error al obtener alimentos por sección:", error);
-    return {};
-  }
+export function obtenerAlimentosPorSeccion(usuarioId, seccion) {
+  const stmt = db.prepare(`
+    SELECT registro_dieta.id, alimento.nombre_alimento, registro_dieta.cantidad, 
+           registro_dieta.calorias, registro_dieta.seccion, 
+           registro_dieta.tiempo_registro
+    FROM registro_dieta
+    JOIN alimento ON registro_dieta.alimento_id = alimento.id
+    WHERE registro_dieta.usuario_id = ?
+      AND registro_dieta.seccion = ?
+    ORDER BY registro_dieta.tiempo_registro DESC
+  `);
+  return stmt.all(usuarioId, seccion);
 }

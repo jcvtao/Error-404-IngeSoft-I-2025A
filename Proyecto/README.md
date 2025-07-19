@@ -83,7 +83,22 @@ El proyecto cuenta con el linter ESLinter con el plugin para Svelte. Para instal
 npm install --save-dev eslint eslint-plugin-svelte3
 ```
 
-Para correr el lint se debe ejecutar el siguiente comando:
+Para ejecutar el lint se debe utilizar el siguiente comando:
 ```bash
 npm run lint
 ```
+
+### Vitest
+
+El proyecto cuenta con unas pruebas utilizando Vitest. Para instalarlo se debe ejecutar el siguiente comando:
+
+```bash
+npm install -D vitest @testing-library/svelte @testing-library/jest-dom jsdom
+```
+
+Para ejecutar las pruebas se debe utilizar el siguiente comando:
+```bash
+npm run test -- --reporter verbose
+```
+
+La opción `--reporter verbose` permite ver a detalle los resultados de las pruebas unitarias.

@@ -2,6 +2,7 @@
   import CaloriasSugeridas from './CaloriasSugeridas.svelte';
   import { createEventDispatcher } from 'svelte';
 
+
   const dispatch = createEventDispatcher();
 
   let paso = 1;
@@ -9,9 +10,9 @@
   let nombre = '';
   let password = '';
   let sexo = '';
-  let edad = 0;
-  let peso = 0;
-  let altura = 0;
+  let edad = null;
+  let peso = null;
+  let altura = null;
   let objetivo = '';
   let intensidad = 0;
   let calorias = 0;
@@ -96,9 +97,11 @@
       peso: Number(peso),
       altura: Number(altura),
       objetivo,
-      intensidad: Number(intensidad)
+      intensidad: Number(intensidad), 
+      calorias_sugeridas: Number(calorias),
     };
-
+    console.log(usuario);
+    
     try {
       const resultado = await window.electronAPI.registrarUsuario(usuario);
 
@@ -216,9 +219,9 @@
         </div>
       </div>
       <div class="d-flex justify-content-between">
-        <a class="navbar-brand text-light fw-semibold fs-3" href="#">
+        <span class="navbar-brand text-light fw-semibold fs-3">
         <button class="btn btn-secondary fw-semibold" on:click={mostrarInicio}><i class="fa-solid fa-circle-chevron-left"></i> Atrás</button>
-        </a>
+        </span>
         <button class="btn btn-warning fw-semibold" on:click={() => paso = 2} disabled={!objetivo}>Siguiente <i class="fa-solid fa-circle-chevron-right"></i></button>
       </div>
 
@@ -245,8 +248,9 @@
           min="18"
           max="100"
           step="1"
-          bind:value={edad}
-          placeholder="Ingresa tu edad en años"
+          value={edad ?? ''}
+          on:input={(e) => edad = +e.target.value}
+          placeholder="Ingresa tu edad"
         />
         {#if edad && (edad < 18 || edad > 100)}
           <div class="text-danger mt-1 small">La edad debe estar entre 18 y 100 años.</div>
@@ -263,7 +267,8 @@
         min="40"
         max="120"
         step="0.1"
-        bind:value={peso}
+        value={peso ?? ''}
+        on:input={(e) => peso = +e.target.value}
         placeholder="Ingresa tu peso en Kg"
           />
           <span class="input-group-text">kg</span>
@@ -283,8 +288,9 @@
         min="140"
         max="250"
         step="1"
-        bind:value={altura}
-        placeholder="Ingresa tu altura en CM"
+        value={altura ?? ''}
+        on:input={(e) => altura = +e.target.value}
+        placeholder="Ingresa tu altura en cm"
           />
           <span class="input-group-text">cm</span>
         </div>
@@ -327,7 +333,7 @@
 
     {:else if paso === 3}
       <!-- Paso 3: Actividad física -->
-      <label class="form-label mb-3 fw-semibold text-center" style="font-size: 1.5rem;">Nivel de actividad física🏃‍♂️</label>
+      <div class="form-label mb-3 fw-semibold text-center" style="font-size: 1.5rem;">Nivel de actividad física🏃‍♂️</div>
       <div class="text-center mb-2" style="font-size: 2rem;">
         {#each Array(4) as _, i}
           <button

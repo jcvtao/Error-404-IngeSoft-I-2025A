@@ -81,12 +81,12 @@
   <Registro on:registroExitoso={mostrarLogin} on:mostrarInicio={mostrarInicio} />
 
 {:else if vista === 'dashboard'}
-  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarInicio} />
+  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarLogin} />
   <Dashboard usuarioActual={usuarioActual} />
   {#if mostrarPreferencias}
     <Preferencias usuarioActual={usuarioActual} on:finalizado={() => mostrarPreferencias = false} />
   {/if}
 {:else if vista === 'perfil'}
-  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarInicio} />
+  <Navbar on:irDashboard={mostrarDashboard} on:irPerfil={mostrarPerfil} on:cerrarSesion={mostrarLogin} />
   <Perfil usuarioActual={usuarioActual} />
 {/if}

@@ -9,6 +9,7 @@ CREATE TABLE usuarios (
                 altura REAL NOT NULL,
                 objetivo VARCHAR NOT NULL,
                 intensidad VARCHAR NOT NULL,
+                calorias_sugeridas REAL NOT NULL,
                 fecha_registro DATE NOT NULL
             );
 
@@ -25,6 +26,7 @@ CREATE TABLE registro_dieta (
                 alimento_id INTEGER NOT NULL,
                 cantidad REAL NOT NULL,
                 calorias REAL NOT NULL,
+                seccion INTEGER NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
                 FOREIGN KEY(alimento_id) REFERENCES alimento(id)
