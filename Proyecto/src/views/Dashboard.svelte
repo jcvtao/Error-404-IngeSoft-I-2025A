@@ -74,7 +74,7 @@
       const alimento = evento.detail;
       
       // Agregar el alimento a la sección activa
-      seccionActiva.alimentos = [...seccionActiva.alimentos, alimento];
+      cargarAlimentosRegistrados();
       
       // Recalcular calorías
       calcularCaloriasTotal();
