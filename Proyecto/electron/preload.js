@@ -26,7 +26,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('obtener-historial-peso', usuarioId),
 
   obtenerAlimentosPorSeccion: (usuarioId, seccion) =>
-    ipcRenderer.invoke('obtener-alimentos-por-seccion', usuarioId, seccion)
+    ipcRenderer.invoke('obtener-alimentos-por-seccion', usuarioId, seccion),
+
+  eliminarRegistroDieta: (registroId) =>
+    ipcRenderer.invoke('eliminarRegistroDieta', registroId)
 });
 
 console.log('[preload.js] `electronAPI` expuesto al entorno de renderizado.');

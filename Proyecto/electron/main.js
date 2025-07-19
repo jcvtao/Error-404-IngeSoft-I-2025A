@@ -15,7 +15,8 @@ import {
   obtenerAlimentosFavoritos,
   registrarPeso,
   obtenerHistorialPeso,
-  obtenerAlimentosPorSeccion
+  obtenerAlimentosPorSeccion,
+  eliminarRegistroDieta
 } from './usuarios.js';
 
 // Para __dirname en ES Modules
@@ -114,7 +115,14 @@ app.whenReady().then(() => {
   ipcMain.handle('obtener-alimentos-por-seccion', async (event, usuarioId, seccion) => {
     return obtenerAlimentosPorSeccion(usuarioId, seccion);
   });
+
+  // IPC: Eliminar registro de dieta
+  ipcMain.handle('eliminarRegistroDieta', async (event, registroId) => {
+  return eliminarRegistroDieta(registroId);
+  });
 });
+
+
 
 // Cierre correcto de la aplicación
 app.on('window-all-closed', () => {

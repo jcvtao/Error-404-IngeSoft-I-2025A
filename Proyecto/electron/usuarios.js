@@ -201,3 +201,15 @@ export function obtenerAlimentosPorSeccion(usuarioId, seccion) {
   `);
   return stmt.all(usuarioId, seccion);
 }
+
+export function eliminarRegistroDieta(registroId) {
+  try {
+    db.prepare(`
+      DELETE FROM registro_dieta WHERE id = ?
+    `).run(registroId);
+    return { success: true };
+  } catch (error) {
+    console.error("[usuarios.js] Error al eliminar registro de dieta:", error);
+    return { success: false, mensaje: error.message };
+  }
+}

@@ -1,11 +1,13 @@
 <script>
   import { onMount } from 'svelte';
   import ModalAgregarAlimento from './AgregarAlimento.svelte';
+  import ModalEliminarAlimento from './EliminarAlimento.svelte';
 
   export let usuarioActual;
 
   let alimentosFavoritos = [];
   let mostrarModal = false;
+  let mostrarModalEliminar = false;
   let seccionActiva = null;
   let cargando = true;
   let error = null;
@@ -36,7 +38,6 @@
       for (let seccion of secciones) {
         const alimentos = await window.electronAPI.obtenerAlimentosPorSeccion(usuarioActual.id, seccion.id);
         seccion.alimentos = alimentos || [];
-        console.log(`Alimentos en ${seccion.nombre}:`, seccion.alimentos);
       }
       
       // Calcular calorías después de cargar todos los alimentos
@@ -81,12 +82,38 @@
       
       cerrarModal();
       
-      // Opcional: mostrar mensaje de éxito
-      console.log("Alimento agregado exitosamente:", alimento);
-      
     } catch (e) {
       console.error("Error al agregar alimento:", e);
       error = "Error al agregar el alimento";
+    }
+  }
+
+  let alimentoAEliminar = null;
+  let seccionAEliminar = null;
+
+  function abrirModalEliminar(alimento, seccion) {
+    alimentoAEliminar = alimento;
+    seccionAEliminar = seccion;
+    mostrarModalEliminar = true;
+  }
+
+  function cerrarModalEliminar() {
+    mostrarModalEliminar = false;
+    alimentoAEliminar = null;
+    seccionAEliminar = null;
+  }
+
+  async function confirmarEliminar() {
+    try {
+      // Llama a tu función de backend para eliminar el registro
+      await window.electronAPI.eliminarRegistroDieta(alimentoAEliminar.id);
+      // Recarga los alimentos
+      await cargarAlimentosRegistrados();
+    } catch (e) {
+      error = "No se pudo eliminar el registro.";
+      console.error(e);
+    } finally {
+      cerrarModalEliminar();
     }
   }
 
@@ -165,11 +192,25 @@
                 <div class="alimentos-lista">
                   {#each seccion.alimentos as alimento, index}
                     <div class="alimento-item py-2 px-3 mb-2 bg-light rounded">
-                      <div>
-                        <strong>{alimento.nombre_alimento}</strong>
-                        <small class="text-muted d-block">
-                          {alimento.cantidad || 1} {alimento.unidad || 'porción'} - {alimento.calorias} kcal
-                        </small>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong>{alimento.nombre_alimento}</strong>
+                          <small class="text-muted d-block">
+                            {alimento.cantidad || 1} {alimento.unidad || 'porción'} - {alimento.calorias} kcal
+                          </small>
+                        </div>
+                        <div class="ms-2">
+                          <button class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button 
+                            class="btn btn-sm btn-outline-danger" 
+                            title="Eliminar"
+                            on:click={() => abrirModalEliminar(alimento, seccion)}
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   {/each}
@@ -200,6 +241,14 @@
     />
   {/if}
 
+  {#if mostrarModalEliminar}
+    <ModalEliminarAlimento
+      alimento={alimentoAEliminar}
+      seccion={seccionAEliminar}
+      on:cancelar={cerrarModalEliminar}
+      on:confirmar={confirmarEliminar}
+    />
+  {/if}
 
 <style>
   .dashboard-fondo {
