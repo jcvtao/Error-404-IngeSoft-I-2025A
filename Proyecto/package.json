@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "electron-dev": "concurrently \"npm run dev\" \"cross-env NODE_ENV=development electron .\"",
     "package": "npm run build && electron-builder build",
-    "lint": "eslint . --ext .js,.svelte"
+    "lint": "eslint . --ext .js,.svelte",
+    "test": "vitest"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -25,7 +26,9 @@
     "vite": "^4.5.0",
     "wait-on": "^7.0.1",
     "electron-builder": "^24.9.1",
-    "cross-env": "^7.0.3" 
+    "cross-env": "^7.0.3",
+    "eslint": "^9.31.0",
+    "eslint-plugin-svelte3": "^4.0.0"
   },
   "build": {
     "appId": "com.fitapp.app",
