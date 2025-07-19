@@ -18,14 +18,19 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/svelte": "^5.2.8",
+    "@testing-library/user-event": "^14.6.1",
     "concurrently": "^8.0.1",
+    "cross-env": "^7.0.3",
     "electron": "^37.1.0",
+    "electron-builder": "^24.9.1",
     "electron-rebuild": "^3.2.9",
+    "jsdom": "^26.1.0",
     "svelte": "^3.59.2",
     "vite": "^4.5.0",
-    "wait-on": "^7.0.1",
-    "electron-builder": "^24.9.1",
-    "cross-env": "^7.0.3" 
+    "vitest": "^3.2.4",
+    "wait-on": "^7.0.1"
   },
   "build": {
     "appId": "com.fitapp.app",
