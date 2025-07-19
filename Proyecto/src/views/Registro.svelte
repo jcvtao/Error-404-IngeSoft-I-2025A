@@ -219,9 +219,9 @@
         </div>
       </div>
       <div class="d-flex justify-content-between">
-        <a class="navbar-brand text-light fw-semibold fs-3" href="#">
+        <span class="navbar-brand text-light fw-semibold fs-3">
         <button class="btn btn-secondary fw-semibold" on:click={mostrarInicio}><i class="fa-solid fa-circle-chevron-left"></i> Atrás</button>
-        </a>
+        </span>
         <button class="btn btn-warning fw-semibold" on:click={() => paso = 2} disabled={!objetivo}>Siguiente <i class="fa-solid fa-circle-chevron-right"></i></button>
       </div>
 
@@ -333,7 +333,7 @@
 
     {:else if paso === 3}
       <!-- Paso 3: Actividad física -->
-      <label class="form-label mb-3 fw-semibold text-center" style="font-size: 1.5rem;">Nivel de actividad física🏃‍♂️</label>
+      <div class="form-label mb-3 fw-semibold text-center" style="font-size: 1.5rem;">Nivel de actividad física🏃‍♂️</div>
       <div class="text-center mb-2" style="font-size: 2rem;">
         {#each Array(4) as _, i}
           <button

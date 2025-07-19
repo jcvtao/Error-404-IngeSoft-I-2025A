@@ -81,7 +81,15 @@
             {#each alimentos as alimento}
               <div
                 class="alimento-card {seleccionado?.id === alimento.id ? 'seleccionado' : ''}"
+                tabindex="0"
+                role="button"
+                aria-pressed={seleccionado?.id === alimento.id}
                 on:click={() => seleccionar(alimento)}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    seleccionar(alimento);
+                  }
+                }}
               >
                 <div class="emoji">{extraerEmoji(alimento.nombre)}</div>
                 <div class="alimento-nombre">{alimento.nombre.replace(/[^\w\s]/gi, '').trim()}</div>
@@ -111,9 +119,10 @@
           </div>
           
           <div class="input-grupo">
-            <label>Cantidad consumida</label>
+            <label for="cantidad-consumida">Cantidad consumida</label>
             <div class="input-wrapper">
               <input
+                id="cantidad-consumida"
                 type="number"
                 bind:value={gramos}
                 min="0"

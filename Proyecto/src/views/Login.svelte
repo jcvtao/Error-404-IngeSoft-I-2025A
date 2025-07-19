@@ -77,9 +77,9 @@
     <!-- Enlace a registro -->
     <div class="text-center text-muted" style="font-size: 0.95rem;">
       ¿Aún no tienes una cuenta?
-      <a href="javascript:void(0)" class="text-dark fw-semibold text-decoration-none" on:click={irARegistro}>
+      <button type="button" class="btn btn-link text-dark fw-semibold text-decoration-none p-0 align-baseline" on:click={irARegistro} style="font-size: inherit;">
         Regístrate aquí.
-      </a>  
+      </button>  
     </div>
 
     <!-- Mensaje de error -->
