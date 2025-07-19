@@ -187,18 +187,15 @@ export function obtenerAlimentosFavoritos(usuarioId) {
 }
 
 export function obtenerAlimentosPorSeccion(usuarioId, seccion) {
-  try {
-    const rows = db.prepare(`
-      SELECT seccion, alimento.nombre_alimento AS nombre, registro_dieta.calorias
-      FROM registro_dieta
-      JOIN alimento ON alimento.id = registro_dieta.alimento_id
-      WHERE registro_dieta.usuario_id = ? AND seccion = ? AND DATE(registro_dieta.tiempo_registro) = DATE('now')
-      ORDER BY registro_dieta.tiempo_registro DESC
-    `).all(usuarioId, seccion);
-
-    return rows;
-  } catch (error) {
-    console.error("[usuarios.js] Error al obtener alimentos por sección:", error);
-    return [];
-  }
+  const stmt = db.prepare(`
+    SELECT registro_dieta.id, alimento.nombre_alimento, registro_dieta.cantidad, 
+           registro_dieta.calorias, registro_dieta.seccion, 
+           registro_dieta.tiempo_registro
+    FROM registro_dieta
+    JOIN alimento ON registro_dieta.alimento_id = alimento.id
+    WHERE registro_dieta.usuario_id = ?
+      AND registro_dieta.seccion = ?
+    ORDER BY registro_dieta.tiempo_registro DESC
+  `);
+  return stmt.all(usuarioId, seccion);
 }

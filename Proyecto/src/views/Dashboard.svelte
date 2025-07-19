@@ -7,18 +7,20 @@
   let alimentosFavoritos = [];
   let mostrarModal = false;
   let seccionActiva = null;
+  let cargando = true;
+  let error = null;
 
-  let caloriasSugeridas = usuarioActual.calorias_sugeridas; // TODO
+  let caloriasSugeridas = usuarioActual?.calorias_sugeridas || 2000;
   let caloriasConsumidas = 0;
 
   let secciones = [
-    { id: 1, nombre: 'Desayuno 🍳', alimentos: [] },
-    { id: 2, nombre: 'Almuerzo 🍚', alimentos: [] },
-    { id: 3, nombre: 'Cena 🍲', alimentos: [] },
-    { id: 4, nombre: 'Snacks 🍎', alimentos: [] }
+    { id: 1, nombre: 'Desayuno 🍳', alimentos: [], calorias: 0 },
+    { id: 2, nombre: 'Almuerzo 🍚', alimentos: [], calorias: 0 },
+    { id: 3, nombre: 'Cena 🍲', alimentos: [], calorias: 0 },
+    { id: 4, nombre: 'Snacks 🍎', alimentos: [], calorias: 0 }
   ];
 
-  // Fondo decorativo (opcional)
+  // Fondo decorativo
   let emojis = ['🥦', '🥕', '🌽', '🥬', '🧄', '🍞', '🍗', '🫐', '🍇', '🥚'];
   let fondo = Array.from({ length: 50 }, () => ({
     emoji: emojis[Math.floor(Math.random() * emojis.length)],
@@ -27,19 +29,33 @@
     size: 1.5 + Math.random() * 2
   }));
 
+  // Función para calcular el total de calorías
+  function calcularCaloriasTotal() {
+    caloriasConsumidas = secciones.reduce((total, seccion) => {
+      seccion.calorias = seccion.alimentos.reduce((suma, alimento) => suma + (alimento.calorias || 0), 0);
+      return total + seccion.calorias;
+    }, 0);
+  }
+
   async function cargarAlimentosRegistrados() {
     try {
+      cargando = true;
+      error = null;
+      
       for (let seccion of secciones) {
         const alimentos = await window.electronAPI.obtenerAlimentosPorSeccion(usuarioActual.id, seccion.id);
         seccion.alimentos = alimentos || [];
-        console.log(`Alimentos en ${seccion.nombre}:`, seccion.alimentos, seccion.alimentos.length);
-        // Sumar calorías consumidas
-        for (let alimento of seccion.alimentos) {
-          caloriasConsumidas += alimento.calorias;
-        }
+        console.log(`Alimentos en ${seccion.nombre}:`, seccion.alimentos);
       }
+      
+      // Calcular calorías después de cargar todos los alimentos
+      calcularCaloriasTotal();
+      
     } catch (e) {
       console.error("Error al cargar alimentos registrados:", e);
+      error = "Error al cargar los alimentos registrados";
+    } finally {
+      cargando = false;
     }
   }
 
@@ -62,15 +78,38 @@
     seccionActiva = null;
   }
 
-  function agregarAlimento(alimento) {
-    seccionActiva.alimentos.push(alimento);
-    caloriasConsumidas += alimento.detail.calorias;
-    cerrarModal();
+  async function agregarAlimento(evento) {
+    try {
+      const alimento = evento.detail;
+      
+      // Agregar el alimento a la sección activa
+      seccionActiva.alimentos = [...seccionActiva.alimentos, alimento];
+      
+      // Recalcular calorías
+      calcularCaloriasTotal();
+      
+      cerrarModal();
+      
+      // Opcional: mostrar mensaje de éxito
+      console.log("Alimento agregado exitosamente:", alimento);
+      
+    } catch (e) {
+      console.error("Error al agregar alimento:", e);
+      error = "Error al agregar el alimento";
+    }
   }
 
+  // Función para obtener el porcentaje de calorías consumidas
+  $: porcentajeConsumo = Math.min((caloriasConsumidas / caloriasSugeridas) * 100, 100);
+  
+  // Mantener el color original de la barra de progreso
+  $: colorBarra = 'bg-warning';
+
   onMount(() => {
-    cargarAlimentosRegistrados();
-    cargarAlimentosFavoritos();
+    if (usuarioActual?.id) {
+      cargarAlimentosRegistrados();
+      cargarAlimentosFavoritos();
+    }
   });
 </script>
 
@@ -85,82 +124,263 @@
 
   <div class="contenido-card card shadow-lg rounded-4">
     <div class="contenido-scroll p-4">
-      <h2 class="card-header fw-bold mb-4">Dashboard de hoy 🌞</h2>
+      <h2 class="card-header fw-bold mb-4 text-center">Dashboard de hoy 🌞</h2>
+
+      {#if error}
+        <div class="alert alert-danger" role="alert">
+          {error}
+          <button class="btn btn-sm btn-outline-danger ms-2" on:click={cargarAlimentosRegistrados}>
+            Reintentar
+          </button>
+        </div>
+      {/if}
 
       <!-- Barra de progreso -->
       <div class="mb-4">
-        <h5 class="text-center">Calorías consumidas</h5>
-        <h5 class="text-center text-warning">{caloriasConsumidas} / {caloriasSugeridas} kcal</h5>
-        <div class="progress bg-light rounded-pill" style="height: 15px">
-          <div
-            class="progress-bar bg-warning"
-            role="progressbar"
-            style="width: {Math.min((caloriasConsumidas / caloriasSugeridas) * 100, 100)}%"
-          ></div>
+        <h5 class="text-center mb-2">Progreso calórico del día</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted">Consumidas: <strong>{caloriasConsumidas}</strong> kcal</span>
+          <span class="text-muted">Meta: <strong>{caloriasSugeridas}</strong> kcal</span>
         </div>
+        <div class="progress bg-light rounded-pill" style="height: 20px">
+          <div
+            class="progress-bar {colorBarra} progress-bar-striped"
+            role="progressbar"
+            style="width: {porcentajeConsumo}%"
+            aria-valuenow={porcentajeConsumo}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+          </div>
+        </div>
+        {#if porcentajeConsumo > 100}
+          <small class="text-danger">¡Has superado tu meta calórica diaria!</small>
+        {/if}
       </div>
 
       <!-- Secciones -->
-      {#each secciones as seccion}
-        <div class="card mb-4 p-3">
-          <h5 class="card-header fw-bold">{seccion.nombre}</h5>
-          {#if seccion.alimentos.length === 0}
-            <p class="text-muted">Aún no has registrado alimentos.</p>
-          {:else}
-            <ul>
-              {#each seccion.alimentos as alimento}
-                <li>{alimento.nombre} - {alimento.calorias} kcal</li>
-              {/each}
-            </ul>
-          {/if}
-          <button class="btn btn-sm btn-outline-warning mt-2 fw-semibold" on:click={() => abrirModal(seccion)}>
-            Agregar alimento
-          </button>
+      {#if cargando}
+        <div class="text-center my-5">
+          <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando tus alimentos...</p>
         </div>
-      {/each}
-
-      <div class="alert alert-info text-center mt-4" role="alert">
-        ¡Recuerda mantener un balance en tus comidas para una vida saludable! 🥗
-      </div>
+      {:else}
+        {#each secciones as seccion}
+          <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+              <h5 class="mb-0 fw-bold">{seccion.nombre}</h5>
+              <span class="badge bg-secondary">{seccion.calorias} kcal</span>
+            </div>
+            <div class="card-body">
+              {#if seccion.alimentos.length === 0}
+                <p class="text-muted text-center py-3">
+                  <i class="bi bi-plate"></i>
+                  Aún no has registrado alimentos en esta sección.
+                </p>
+              {:else}
+                <div class="alimentos-lista">
+                  {#each seccion.alimentos as alimento, index}
+                    <div class="alimento-item py-2 px-3 mb-2 bg-light rounded">
+                      <div>
+                        <strong>{alimento.nombre_alimento}</strong>
+                        <small class="text-muted d-block">
+                          {alimento.cantidad || 1} {alimento.unidad || 'porción'} - {alimento.calorias} kcal
+                        </small>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+              
+              <button 
+                class="btn btn-outline-warning w-100 mt-3 fw-semibold" 
+                on:click={() => abrirModal(seccion)}
+              >
+                <i class="bi bi-plus-circle me-2"></i>
+                Agregar alimento
+              </button>
+            </div>
+          </div>
+        {/each}
+      {/if}
     </div>
   </div>
 
   {#if mostrarModal}
     <ModalAgregarAlimento
-    usuarioId={usuarioActual.id}
-    seccion={seccionActiva.id}
-    on:cerrar={cerrarModal}
-    on:guardar={agregarAlimento}
-  />
+      usuarioId={usuarioActual.id}
+      seccion={seccionActiva.id}
+      alimentosFavoritos={alimentosFavoritos}
+      on:cerrar={cerrarModal}
+      on:guardar={agregarAlimento}
+    />
   {/if}
 </div>
 
 <style>
   .dashboard-fondo {
     position: relative;
-    background-color: whitesmoke;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(255, 193, 7, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(40, 167, 69, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, 
+        #ffffff 0%, 
+        #f8f9fa 25%, 
+        #e3f2fd 50%, 
+        #fff3e0 75%, 
+        #f1f8e9 100%);
     min-height: 100vh;
     overflow: hidden;
   }
+  
+  .dashboard-fondo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffc107' fill-opacity='0.05' fill-rule='nonzero'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    animation: backgroundFloat 20s ease-in-out infinite;
+    z-index: 0;
+  }
+  
   .emoji-fondo {
     position: absolute;
-    opacity: 0.5;
+    opacity: 0.4;
     user-select: none;
     pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    z-index: 0;
   }
+  
+  @keyframes float {
+    0%, 100% { 
+      transform: translateY(0px) rotate(0deg) scale(1); 
+    }
+    33% { 
+      transform: translateY(-8px) rotate(2deg) scale(1.05); 
+    }
+    66% { 
+      transform: translateY(-4px) rotate(-1deg) scale(0.98); 
+    }
+  }
+  
+  @keyframes backgroundFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-10px, -10px) rotate(1deg); }
+    50% { transform: translate(5px, -5px) rotate(-1deg); }
+    75% { transform: translate(-5px, 10px) rotate(0.5deg); }
+  }
+  
   .contenido-card {
     position: relative;
-    z-index: 1;
-    max-width: 850px;
-    height: 85vh;
+    z-index: 2;
+    max-width: 900px;
+    height: 90vh;
     margin: 2rem auto;
-    background-color: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 20px 40px rgba(0,0,0,0.1),
+      0 8px 16px rgba(0,0,0,0.05),
+      inset 0 1px 0 rgba(255,255,255,0.6);
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    border-radius: 24px !important;
   }
+  
   .contenido-scroll {
     overflow-y: auto;
     flex-grow: 1;
+  }
+  
+  .alimento-item {
+    border-left: 4px solid #ffc107;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,249,250,0.9) 100%);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,193,7,0.1);
+  }
+  
+  .alimento-item:hover {
+    transform: translateX(8px) scale(1.02);
+    box-shadow: 
+      0 6px 16px rgba(255,193,7,0.2),
+      0 2px 8px rgba(0,0,0,0.1);
+    border-left-color: #ff9800;
+    background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,248,225,0.9) 100%);
+  }
+  
+  .progress-bar {
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(45deg, #ffc107, #ffb300, #ff9800);
+    box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  
+  .progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.4),
+      transparent
+    );
+    animation: shine 3s infinite;
+  }
+  
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+      0 12px 24px rgba(0,0,0,0.15),
+      0 4px 8px rgba(255,193,7,0.2) !important;
+  }
+  
+  /* Scrollbar personalizado */
+  .contenido-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .contenido-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .contenido-scroll::-webkit-scrollbar-thumb {
+    background: #ffc107;
+    border-radius: 3px;
+  }
+  
+  .contenido-scroll::-webkit-scrollbar-thumb:hover {
+    background: #e0a800;
   }
 </style>
