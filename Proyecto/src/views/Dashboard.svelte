@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+import { onMount } from 'svelte';
   import ModalAgregarAlimento from './AgregarAlimento.svelte';
   import ModalEliminarAlimento from './EliminarAlimento.svelte';
   import EditarAlimento from './EditarAlimento.svelte';
@@ -151,7 +151,58 @@
       cargarAlimentosFavoritos();
     }
   });
+  let notificaciones = [];
+
+  function cerrarNotificacion(id) {
+    notificaciones = notificaciones.filter(n => n.id !== id);
+  }
+
+  function mostrarNotificacion(mensaje) {
+    const id = Date.now();
+    notificaciones = [...notificaciones, { id, mensaje }];
+    setTimeout(() => cerrarNotificacion(id), 6000);
+  }
+
+  function filtrarPorSeccion(seccion) {
+    return alimentosFavoritos.filter(a => a.seccion === seccion);
+  }
+
+  function verificarFaltantes() {
+    const ahora = new Date();
+    const hora = ahora.getHours();
+
+    const desayuno = filtrarPorSeccion("desayuno");
+    const almuerzo = filtrarPorSeccion("almuerzo");
+    const cena = filtrarPorSeccion("cena");
+
+    if (hora >= 9 && desayuno.length === 0) {
+      mostrarNotificacion("No has registrado tu desayuno 🍳");
+    }
+
+    if (hora >= 14 && almuerzo.length === 0) {
+      mostrarNotificacion("No has registrado tu almuerzo 🥗");
+    }
+
+    if (hora >= 20 && cena.length === 0) {
+      mostrarNotificacion("No has registrado tu cena 🍝");
+    }
+  }
+
+  onMount(async () => {
+    await cargarAlimentosRegistrados();
+    verificarFaltantes();
+  });
+
 </script>
+
+
+{#each notificaciones as noti (noti.id)}
+  <div class="notificacion">
+    {noti.mensaje}
+    <button on:click={() => cerrarNotificacion(noti.id)}>✖</button>
+  </div>
+{/each}
+
 
   <div class="contenido-card card shadow-lg rounded-4">
     <div class="contenido-scroll p-4">
@@ -285,7 +336,7 @@
   {/if}
 
 <style>
-  .dashboard-fondo {
+.dashboard-fondo {
     position: relative;
     background: 
       radial-gradient(circle at 20% 80%, rgba(255, 193, 7, 0.15) 0%, transparent 50%),
@@ -434,4 +485,27 @@
   .contenido-scroll::-webkit-scrollbar-thumb:hover {
     background: #e0a800;
   }
+  .notificacion {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #facc15;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: opacity 0.5s ease;
+  }
+
+  .notificacion button {
+    background: transparent;
+    border: none;
+    margin-left: 10px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
 </style>
