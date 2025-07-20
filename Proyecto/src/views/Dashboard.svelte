@@ -73,22 +73,37 @@ import { onMount } from 'svelte';
   }
 
   async function agregarAlimento(evento) {
-    try {
-      const alimento = evento.detail;
-      
-      // Agregar el alimento a la sección activa
-      cargarAlimentosRegistrados();
-      
-      // Recalcular calorías
-      calcularCaloriasTotal();
-      
-      cerrarModal();
-      
-    } catch (e) {
-      console.error("Error al agregar alimento:", e);
-      error = "Error al agregar el alimento";
+  try {
+    const alimento = evento.detail;
+
+    // ✅ GUARDAR el alimento en la base de datos
+    await window.electronAPI.registrarComidaDiaria({
+      usuario_id: usuarioActual.id,
+      seccion_id: seccionActiva.id,
+      nombre_alimento: alimento.nombre_alimento,
+      cantidad: alimento.cantidad,
+      unidad: alimento.unidad,
+      calorias: alimento.calorias
+    });
+
+    // ✅ Mostrar notificación de éxito (si tienes habilitado esto)
+    if (window.electronAPI?.notificar) {
+      window.electronAPI.notificar(`Alimento agregado con éxito en ${seccionActiva.nombre}`);
     }
+
+    // Recargar los alimentos actualizados
+    await cargarAlimentosRegistrados();
+    calcularCaloriasTotal();
+
+    cerrarModal();
+
+  } catch (e) {
+    console.error("Error al agregar alimento:", e);
+    error = "Error al agregar el alimento";
   }
+}
+
+
 
   let alimentoAEliminar = null;
   let seccionAEliminar = null;
@@ -193,116 +208,116 @@ import { onMount } from 'svelte';
 </script>
 
 
-{#each notificaciones as noti (noti.id)}
+{#each notificaciones as noti, i (i)}
   <div class="notificacion">
     {noti.mensaje}
-    <button on:click={() => cerrarNotificacion(noti.id)}>✖</button>
+    <button on:click={() => cerrarNotificacion(i)}>✖</button>
   </div>
 {/each}
 
+<div class="contenido-card card shadow-lg rounded-4">
+  <div class="contenido-scroll p-4">
+    <h2 class="card-header fw-bold mb-4 text-center">Dashboard de hoy 🌞</h2>
 
-  <div class="contenido-card card shadow-lg rounded-4">
-    <div class="contenido-scroll p-4">
-      <h2 class="card-header fw-bold mb-4 text-center">Dashboard de hoy 🌞</h2>
-
-      {#if error}
-        <div class="alert alert-danger" role="alert">
-          {error}
-          <button class="btn btn-sm btn-outline-danger ms-2" on:click={cargarAlimentosRegistrados}>
-            Reintentar
-          </button>
-        </div>
-      {/if}
-
-      <!-- Barra de progreso -->
-      <div class="mb-4">
-        <h5 class="text-center mb-2">Progreso calórico del día</h5>
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-muted">Consumidas: <strong>{caloriasConsumidas}</strong> kcal</span>
-          <span class="text-muted">Meta: <strong>{caloriasSugeridas}</strong> kcal</span>
-        </div>
-        <div class="progress bg-light rounded-pill" style="height: 20px">
-          <div
-            class="progress-bar {colorBarra} progress-bar-striped"
-            role="progressbar"
-            style="width: {porcentajeConsumo}%"
-            aria-valuenow={porcentajeConsumo}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          >
-          </div>
-        </div>
-        {#if porcentajeConsumo > 100}
-          <small class="text-danger">¡Has superado tu meta calórica diaria!</small>
-        {/if}
+    {#if error}
+      <div class="alert alert-danger" role="alert">
+        {error}
+        <button class="btn btn-sm btn-outline-danger ms-2" on:click={cargarAlimentosRegistrados}>
+          Reintentar
+        </button>
       </div>
+    {/if}
 
-      <!-- Secciones -->
-      {#if cargando}
-        <div class="text-center my-5">
-          <div class="spinner-border text-warning" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-          <p class="mt-2">Cargando tus alimentos...</p>
+    <!-- Barra de progreso -->
+    <div class="mb-4">
+      <h5 class="text-center mb-2">Progreso calórico del día</h5>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted">Consumidas: <strong>{caloriasConsumidas}</strong> kcal</span>
+        <span class="text-muted">Meta: <strong>{caloriasSugeridas}</strong> kcal</span>
+      </div>
+      <div class="progress bg-light rounded-pill" style="height: 20px">
+        <div
+          class="progress-bar {colorBarra} progress-bar-striped"
+          role="progressbar"
+          style="width: {porcentajeConsumo}%"
+          aria-valuenow={porcentajeConsumo}
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
         </div>
-      {:else}
-        {#each secciones as seccion}
-          <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
-              <h5 class="mb-0 fw-bold">{seccion.nombre}</h5>
-              <span class="badge bg-secondary">{seccion.calorias} kcal</span>
-            </div>
-            <div class="card-body">
-              {#if seccion.alimentos.length === 0}
-                <p class="text-muted text-center py-3">
-                  <i class="bi bi-plate"></i>
-                  Aún no has registrado alimentos en esta sección.
-                </p>
-              {:else}
-                <div class="alimentos-lista">
-                  {#each seccion.alimentos as alimento, index}
-                    <div class="alimento-item py-2 px-3 mb-2 bg-light rounded">
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                          <strong>{alimento.nombre_alimento}</strong>
-                          <small class="text-muted d-block">
-                            {alimento.cantidad || 1} {alimento.unidad || 'porción'} - {alimento.calorias} kcal
-                          </small>
-                        </div>
-                        <div class="ms-2">
-                          <button
-                            class="btn btn-sm btn-outline-primary me-1"
-                            title="Editar" on:click={() => abrirModalEditar(alimento, seccion)}
-                          >
-                            <i class="bi bi-pencil"></i>
-                          </button>
-                          <button 
-                            class="btn btn-sm btn-outline-danger" 
-                            title="Eliminar"
-                            on:click={() => abrirModalEliminar(alimento, seccion)}
-                          >
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-              
-              <button 
-                class="btn btn-outline-warning w-100 mt-3 fw-semibold" 
-                on:click={() => abrirModal(seccion)}
-              >
-                <i class="bi bi-plus-circle me-2"></i>
-                Agregar alimento
-              </button>
-            </div>
-          </div>
-        {/each}
+      </div>
+      {#if porcentajeConsumo > 100}
+        <small class="text-danger">¡Has superado tu meta calórica diaria!</small>
       {/if}
     </div>
+
+    <!-- Secciones -->
+    {#if cargando}
+      <div class="text-center my-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando tus alimentos...</p>
+      </div>
+    {:else}
+      {#each secciones as seccion (seccion.nombre)}
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">{seccion.nombre}</h5>
+            <span class="badge bg-secondary">{seccion.calorias} kcal</span>
+          </div>
+          <div class="card-body">
+            {#if seccion.alimentos.length === 0}
+              <p class="text-muted text-center py-3">
+                <i class="bi bi-plate"></i>
+                Aún no has registrado alimentos en esta sección.
+              </p>
+            {:else}
+              <div class="alimentos-lista">
+                {#each seccion.alimentos as alimento, i (i)}
+                  <div class="alimento-item py-2 px-3 mb-2 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <strong>{alimento.nombre_alimento}</strong>
+                        <small class="text-muted d-block">
+                          {alimento.cantidad || 1} {alimento.unidad || 'porción'} - {alimento.calorias} kcal
+                        </small>
+                      </div>
+                      <div class="ms-2">
+                        <button
+                          class="btn btn-sm btn-outline-primary me-1"
+                          title="Editar" on:click={() => abrirModalEditar(alimento, seccion)}
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-danger" 
+                          title="Eliminar"
+                          on:click={() => abrirModalEliminar(alimento, seccion)}
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+            
+            <button 
+              class="btn btn-outline-warning w-100 mt-3 fw-semibold" 
+              on:click={() => abrirModal(seccion)}
+            >
+              <i class="bi bi-plus-circle me-2"></i>
+              Agregar alimento
+            </button>
+          </div>
+        </div>
+      {/each}
+    {/if}
   </div>
+</div>
+
 
   {#if mostrarModal}
     <ModalAgregarAlimento
