@@ -2,6 +2,7 @@
 import { onMount } from 'svelte';
   import ModalAgregarAlimento from './AgregarAlimento.svelte';
   import ModalEliminarAlimento from './EliminarAlimento.svelte';
+  import { fly } from 'svelte/transition';
   import EditarAlimento from './EditarAlimento.svelte';
 
   export let usuarioActual;
@@ -166,8 +167,10 @@ import { onMount } from 'svelte';
     notificaciones = notificaciones.filter(n => n.id !== id);
   }
 
+  // ✅ Función actualizada para generar un ID único
   function mostrarNotificacion(mensaje) {
-    const id = Date.now();
+    // Se genera un ID único combinando la fecha y un número aleatorio
+    const id = Date.now() + Math.random();
     notificaciones = [...notificaciones, { id, mensaje }];
     setTimeout(() => cerrarNotificacion(id), 6000);
   }
@@ -208,12 +211,19 @@ import { onMount } from 'svelte';
 </script>
 
 
-{#each notificaciones as noti, i (i)}
-  <div class="notificacion">
-    {noti.mensaje}
-    <button on:click={() => cerrarNotificacion(i)}>✖</button>
-  </div>
-{/each}
+<div class="notificacion-container">
+  {#each notificaciones as noti, i (i)}
+    <div 
+      class="notificacion"
+      in:fly="{{ x: 250, duration: 400 }}" 
+      out:fly="{{ x: 250, duration: 400 }}"
+    >
+      {noti.mensaje}
+      <button on:click={() => cerrarNotificacion(noti.id)}>✖</button>
+    </div>
+  {/each}
+</div>
+
 
 <div class="contenido-card card shadow-lg rounded-4">
   <div class="contenido-scroll p-4">
@@ -497,16 +507,23 @@ import { onMount } from 'svelte';
   .contenido-scroll::-webkit-scrollbar-thumb:hover {
     background: #e0a800;
   }
-  .notificacion {
+  /* ✅ Contenedor para las notificaciones que asegura que no se superpongan */
+  .notificacion-container {
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 1000;
+    display: flex; /* ✅ Usar flexbox para apilar las notificaciones */
+    flex-direction: column; /* ✅ Apilarlas verticalmente */
+    gap: 10px; /* ✅ Agregar un espacio entre ellas */
+  }
+
+  /* ✅ Estilos de la notificación individual */
+  .notificacion {
     background-color: #fef3c7;
     color: #92400e;
     border: 1px solid #facc15;
     padding: 12px 20px;
-    margin-bottom: 10px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     transition: opacity 0.5s ease;
@@ -518,6 +535,6 @@ import { onMount } from 'svelte';
     margin-left: 10px;
     font-weight: bold;
     cursor: pointer;
+    color: #92400e;
   }
-
 </style>
