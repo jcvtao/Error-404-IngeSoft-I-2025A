@@ -67,18 +67,6 @@ function initializeDb() {
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
             );
 
-            CREATE TABLE IF NOT EXISTS objetivos (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                usuario_id INTEGER NOT NULL,
-                numero_objetivo INTEGER NOT NULL,
-                objetivo VARCHAR NOT NULL,
-                peso_meta REAL NOT NULL,
-                calorias_meta VARCHAR NOT NULL,
-                fecha_inicio DATE NOT NULL,
-                fecha_objetivo DATE NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
-            );
-
             CREATE TABLE IF NOT EXISTS alimentos_favoritos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
