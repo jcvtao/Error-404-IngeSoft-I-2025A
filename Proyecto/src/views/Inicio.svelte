@@ -10,10 +10,6 @@
     FitApp 🌽🥬
   </h1>
 
-  <p class="lead mb-4" transition:fly={{ y: -10, duration: 300, delay: 150 }}>
-    Tu asistente personal para una vida más saludable.
-  </p>
-
   <!-- Funcionalidades -->
   <div class="container mb-5">
     <div class="row text-center text-dark">
@@ -21,7 +17,7 @@
         <div class="card h-100 shadow bg-light rounded-4 p-3 tarjeta-hover">
           <div class="fs-1">🍽️</div>
           <h5 class="fw-bold mt-2">Registro de alimentos</h5>
-          <p class="small">Desayuno, almuerzo y cena con cálculo automático de calorías.</p>
+          <p class="small">Desayuno, almuerzo, cena y snacks con cálculo automático de calorías.</p>
         </div>
       </div>
 
@@ -35,9 +31,9 @@
 
       <div class="col-md-4 mb-4" transition:fly={{ y: 20, duration: 300, delay: 300 }}>
         <div class="card h-100 shadow bg-light rounded-4 p-3 tarjeta-hover">
-          <div class="fs-1">🤖</div>
-          <h5 class="fw-bold mt-2">Sugerencias inteligentes</h5>
-          <p class="small">IA que recomienda dietas y hábitos según tu meta y preferencias.</p>
+          <div class="fs-1">⭐</div>
+          <h5 class="fw-bold mt-2">Alimentos favoritos</h5>
+          <p class="small">Guarda tus alimentos preferidos para un acceso rápido.</p>
         </div>
       </div>
     </div>
