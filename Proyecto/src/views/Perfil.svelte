@@ -23,17 +23,6 @@
     return { texto: 'Obesidad', color: '#ef4444' };
   }
 
-  function obtenerTendencia() {
-    if (historial.length < 2) return null;
-    const ultimo = historial[historial.length - 1].peso;
-    const anterior = historial[historial.length - 2].peso;
-    const diferencia = ultimo - anterior;
-    
-    if (diferencia > 0.1) return { texto: `+${diferencia.toFixed(1)} kg`, color: '#f59e0b', icono: '↗' };
-    if (diferencia < -0.1) return { texto: `${diferencia.toFixed(1)} kg`, color: '#10b981', icono: '↘' };
-    return { texto: 'Sin cambios', color: '#6b7280', icono: '→' };
-  }
-
   async function registrarPeso() {
     if (!pesoActual) return;
     imcActual = calcularIMC(pesoActual, usuarioActual.altura);
@@ -52,7 +41,6 @@
 
   $: ultimoRegistro = historial[historial.length - 1];
   $: categoriaIMC = ultimoRegistro ? obtenerCategoriaIMC(ultimoRegistro.imc) : null;
-  $: tendencia = obtenerTendencia();
 </script>
 
 <div class="contenedor card mt-4 mb-4 shadow-lg rounded-4">
@@ -79,20 +67,6 @@
           <div class="imc-categoria" style="color: {categoriaIMC.color}">
             {categoriaIMC.texto}
           </div>
-        {/if}
-      </div>
-    </div>
-
-    <div class="stat-card tendencia">
-      <div class="stat-icon">📈</div>
-      <div class="stat-info">
-        <div class="stat-label">Tendencia</div>
-        {#if tendencia}
-          <div class="stat-value" style="color: {tendencia.color}">
-            {tendencia.icono} {tendencia.texto}
-          </div>
-        {:else}
-          <div class="stat-value">--</div>
         {/if}
       </div>
     </div>
