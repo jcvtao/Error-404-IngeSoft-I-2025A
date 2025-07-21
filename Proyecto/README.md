@@ -17,41 +17,71 @@ Asegúrate de tener instalado lo siguiente:
 
     - **macOS/Linux:** Asegúrate de tener las herramientas de línea de comandos de desarrollo instaladas.
 
-- Acceso a terminal o consola (cmd / PowerShell / bash).
+- **Bootstrap-icons v1.11.x:** Se recomienda instalar la versión v1.11.3. Puedes hacerlo ejecutando en la terminal: `npm install bootstrap-icons@1.11.3`.
 
+- Acceso a terminal o consola (cmd / PowerShell / bash) con permisos de administrador.
 
-## Configuración Automática 🚀
+## Instalación FitApp 🥬🌽
 
-### Windows
+### Instalación Automática 🚀
+Para instalar la aplicación se debe ingresar a consola **con permisos de administrador** y ejecutar el siguiente comando:
+
+#### Windows
+
+```bash
+setup_fitapp.bat
+```
+
+#### macOS/Linux
+
+```bash
+setup_fitapp.sh
+```
+Posteriormente se debe ejecutar en el explorador de archivos el setup de la aplicación en `Proyecto/release/FitApp Setup 1.0.0.exe`, para instalar FitApp como una aplicación de escritorio.
+
+### Instalación Manual 🛠️
+
+Primero se deben instalar todas las dependencias utilizadas (mencionadas en requisitos) utilizando la consola o las instrucciones del **Modo Desarrollo**. Luego se debe ingresar a consola **con permisos de administrador** y ejecutar el siguiente comando:
+```bash
+npm run package
+```
+
+Posteriormente se debe ejecutar en el explorador de archivos el setup de la aplicación en `Proyecto/release/FitApp Setup 1.0.0.exe`, para instalar FitApp como una aplicación de escritorio.
+
+## Modo Desarrollo 💻
+
+### Configuración Automática 🚀
+
+#### Windows
 
 ```bash
 setup_env.bat
 ```
 
-### macOS/Linux
+#### macOS/Linux
 
 ```bash
 bash setup_env.sh
 ```
 
-## Configuración Manual 🛠️
+### Configuración Manual 🛠️
 
 Sigue estos pasos para preparar tu entorno:
 
-### 1. Clona el repositorio:
+#### 1. Clona el repositorio:
 
 ```bash
 git clone https://github.com/jcvtao/Error-404-IngeSoft-I-2025A
 cd Error-404-IngeSoft-I-2025A/Proyecto
 ```
 
-### 2. Instala dependencias:
+#### 2. Instala dependencias:
 
 ```bash
 npm install
 ```
 
-### 3. Reconstruye módulos nativos para Electron
+#### 3. Reconstruye módulos nativos para Electron
 Este paso es CRÍTICO para evitar errores.
 
 ```bash
@@ -65,17 +95,19 @@ Si en Windows `npx` falla, intenta haciendo:
 
 Asegúrate de que este comando se complete sin errores. Si persisten, revisa la instalación de las herramientas de compilación.
 
-### 4. Ejecución en Desarrollo
+#### 4. Instalación íconos de Bootstrap
+
+Se debe ejecutar el siguiente comando:
+```bash
+npm install bootstrap-icons
+```
+
+#### 5. Ejecución en Desarrollo
 
 Para iniciar la aplicación en modo desarrollo (frontend con Vite, backend con Electron):
 
 ```bash
 npm run electron-dev
-```
-
-Para iniciar la aplicación:
-```bash
-npm run package
 ```
 
 ## Instrucciones Adicionales
