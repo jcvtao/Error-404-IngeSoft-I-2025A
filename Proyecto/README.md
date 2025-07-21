@@ -73,6 +73,11 @@ Para iniciar la aplicación en modo desarrollo (frontend con Vite, backend con E
 npm run electron-dev
 ```
 
+Para iniciar la aplicación:
+```bash
+npm run package
+```
+
 ## Instrucciones Adicionales
 
 ### ESLinter
