@@ -34,7 +34,6 @@ export async function registrarUsuario(usuario) {
         fechaRegistro
     );
 
-    console.log(`[usuarios.js] Usuario registrado con ID: ${info.lastInsertRowid}`);
     return { success: true, mensaje: 'Usuario registrado con éxito', userId: info.lastInsertRowid };
   } catch (error) {
     console.error('[usuarios.js] Error en registrarUsuario:', error);
@@ -224,7 +223,6 @@ export function editarRegistroDieta(registroId, gramos, seccion) {
     }
 
     const calorias = Math.round((caloriasAlimento.calorias * gramos) / 100);
-    console.log(caloriasAlimento, calorias, seccion);
 
     db.prepare(`
       UPDATE registro_dieta
