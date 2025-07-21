@@ -123,7 +123,7 @@ async function guardar() {
     {/each}
 
     <div class="d-flex justify-content-end mt-4">
-      <button class="btn btn-primary fw-semibold" on:click={guardar}>
+      <button class="btn btn-warning fw-semibold" on:click={guardar} disabled={seleccionados.length === 0}>
         Guardar cambios <i class="fa-solid fa-check-circle ms-2"></i>
       </button>
     </div>
@@ -164,14 +164,13 @@ async function guardar() {
   }
 
   .chip-button:hover {
-    background-color: #e9ecef;
+    border-color: #ffc107;
+    background-color: #fff3cd;
   }
 
   .chip-button.selected {
-    background-color: #ffc107;
+    background-color: #ffe69c;
     border-color: #ffc107;
-    color: white;
-    font-weight: 600;
   }
 
   .chip-button span {
