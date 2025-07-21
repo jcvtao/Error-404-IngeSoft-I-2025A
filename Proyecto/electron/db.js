@@ -49,6 +49,7 @@ function initializeDb() {
                 usuario_id INTEGER NOT NULL,
                 alimento_id INTEGER NOT NULL,
                 cantidad REAL NOT NULL,
+                gramos REAL NOT NULL,
                 calorias REAL NOT NULL,
                 seccion INTEGER NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
@@ -63,18 +64,6 @@ function initializeDb() {
                 peso REAL NOT NULL,
                 imc REAL NOT NULL,
                 tiempo_registro DATETIME NOT NULL,
-                FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
-            );
-
-            CREATE TABLE IF NOT EXISTS objetivos (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                usuario_id INTEGER NOT NULL,
-                numero_objetivo INTEGER NOT NULL,
-                objetivo VARCHAR NOT NULL,
-                peso_meta REAL NOT NULL,
-                calorias_meta VARCHAR NOT NULL,
-                fecha_inicio DATE NOT NULL,
-                fecha_objetivo DATE NOT NULL,
                 FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
             );
 

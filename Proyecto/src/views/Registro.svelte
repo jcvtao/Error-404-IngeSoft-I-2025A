@@ -100,7 +100,6 @@
       intensidad: Number(intensidad), 
       calorias_sugeridas: Number(calorias),
     };
-    console.log(usuario);
     
     try {
       const resultado = await window.electronAPI.registrarUsuario(usuario);

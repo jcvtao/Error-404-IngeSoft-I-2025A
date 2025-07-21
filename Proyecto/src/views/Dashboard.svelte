@@ -1,11 +1,16 @@
 <script>
-  import { onMount } from 'svelte';
+import { onMount } from 'svelte';
   import ModalAgregarAlimento from './AgregarAlimento.svelte';
+  import ModalEliminarAlimento from './EliminarAlimento.svelte';
+  import { fly } from 'svelte/transition';
+  import EditarAlimento from './EditarAlimento.svelte';
 
   export let usuarioActual;
 
   let alimentosFavoritos = [];
   let mostrarModal = false;
+  let mostrarModalEliminar = false;
+  let mostrarModalEditar = false;
   let seccionActiva = null;
   let cargando = true;
   let error = null;
@@ -36,7 +41,6 @@
       for (let seccion of secciones) {
         const alimentos = await window.electronAPI.obtenerAlimentosPorSeccion(usuarioActual.id, seccion.id);
         seccion.alimentos = alimentos || [];
-        console.log(`Alimentos en ${seccion.nombre}:`, seccion.alimentos);
       }
       
       // Calcular calorías después de cargar todos los alimentos
@@ -70,24 +74,85 @@
   }
 
   async function agregarAlimento(evento) {
-    try {
-      const alimento = evento.detail;
-      
-      // Agregar el alimento a la sección activa
-      cargarAlimentosRegistrados();
-      
-      // Recalcular calorías
-      calcularCaloriasTotal();
-      
-      cerrarModal();
-      
-      // Opcional: mostrar mensaje de éxito
-      console.log("Alimento agregado exitosamente:", alimento);
-      
-    } catch (e) {
-      console.error("Error al agregar alimento:", e);
-      error = "Error al agregar el alimento";
+  try {
+    const alimento = evento.detail;
+
+    // ✅ GUARDAR el alimento en la base de datos
+    await window.electronAPI.registrarComidaDiaria({
+      usuario_id: usuarioActual.id,
+      seccion_id: seccionActiva.id,
+      nombre_alimento: alimento.nombre_alimento,
+      cantidad: alimento.cantidad,
+      unidad: alimento.unidad,
+      calorias: alimento.calorias
+    });
+
+    // ✅ Mostrar notificación de éxito (si tienes habilitado esto)
+    if (window.electronAPI?.notificar) {
+      window.electronAPI.notificar(`Alimento agregado con éxito en ${seccionActiva.nombre}`);
     }
+
+    // Recargar los alimentos actualizados
+    await cargarAlimentosRegistrados();
+    calcularCaloriasTotal();
+
+    cerrarModal();
+
+  } catch (e) {
+    console.error("Error al agregar alimento:", e);
+    error = "Error al agregar el alimento";
+  }
+}
+
+
+
+  let alimentoAEliminar = null;
+  let seccionAEliminar = null;
+
+  function abrirModalEliminar(alimento, seccion) {
+    alimentoAEliminar = alimento;
+    seccionAEliminar = seccion;
+    mostrarModalEliminar = true;
+  }
+
+  function cerrarModalEliminar() {
+    mostrarModalEliminar = false;
+    alimentoAEliminar = null;
+    seccionAEliminar = null;
+  }
+
+  async function confirmarEliminar() {
+    try {
+      // Llama a tu función de backend para eliminar el registro
+      await window.electronAPI.eliminarRegistroDieta(alimentoAEliminar.id);
+      // Recarga los alimentos
+      await cargarAlimentosRegistrados();
+    } catch (e) {
+      error = "No se pudo eliminar el registro.";
+      console.error(e);
+    } finally {
+      cerrarModalEliminar();
+    }
+  }
+
+  let alimentoAEditar = null;
+  let seccionAEditar = null;
+
+  function abrirModalEditar(alimento, seccion) {
+    alimentoAEditar = alimento;
+    seccionAEditar = seccion;
+    mostrarModalEditar = true;
+  }
+
+  function cerrarModalEditar() {
+    mostrarModalEditar = false;
+    alimentoAEditar = null;
+    seccionAEditar = null;
+  }
+
+  async function confirmarEditar() {
+    await cargarAlimentosRegistrados();
+    cerrarModalEditar();
   }
 
   // Función para obtener el porcentaje de calorías consumidas
@@ -96,99 +161,173 @@
   // Mantener el color original de la barra de progreso
   $: colorBarra = 'bg-warning';
 
-  onMount(() => {
+  let notificaciones = [];
+
+  function cerrarNotificacion(id) {
+    notificaciones = notificaciones.filter(n => n.id !== id);
+  }
+
+  // ✅ Función actualizada para generar un ID único
+  function mostrarNotificacion(mensaje) {
+    // Se genera un ID único combinando la fecha y un número aleatorio
+    const id = Date.now() + Math.random();
+    notificaciones = [...notificaciones, { id, mensaje }];
+    setTimeout(() => cerrarNotificacion(id), 6000);
+  }
+
+  // Función corregida para verificar faltantes
+  function verificarFaltantes() {
+    const ahora = new Date();
+    const hora = ahora.getHours();
+
+    // Buscar las secciones por ID en lugar de usar alimentosFavoritos
+    const desayuno = secciones.find(s => s.id === 1); // Desayuno
+    const almuerzo = secciones.find(s => s.id === 2);  // Almuerzo
+    const cena = secciones.find(s => s.id === 3);      // Cena
+
+    // Verificar si cada sección tiene alimentos registrados
+    if (hora >= 9 && desayuno && desayuno.alimentos.length === 0) {
+      mostrarNotificacion("No has registrado tu desayuno 🍳");
+    }
+
+    if (hora >= 14 && almuerzo && almuerzo.alimentos.length === 0) {
+      mostrarNotificacion("No has registrado tu almuerzo 🥗");
+    }
+
+    if (hora >= 20 && cena && cena.alimentos.length === 0) {
+      mostrarNotificacion("No has registrado tu cena 🍝");
+    }
+  }
+
+  onMount(async () => {
     if (usuarioActual?.id) {
-      cargarAlimentosRegistrados();
-      cargarAlimentosFavoritos();
+      await cargarAlimentosRegistrados();
+      await cargarAlimentosFavoritos();
+      // Verificar faltantes después de cargar los datos
+      verificarFaltantes();
     }
   });
+
 </script>
 
-  <div class="contenido-card card shadow-lg rounded-4">
-    <div class="contenido-scroll p-4">
-      <h2 class="card-header fw-bold mb-4 text-center">Dashboard de hoy 🌞</h2>
 
-      {#if error}
-        <div class="alert alert-danger" role="alert">
-          {error}
-          <button class="btn btn-sm btn-outline-danger ms-2" on:click={cargarAlimentosRegistrados}>
-            Reintentar
-          </button>
-        </div>
-      {/if}
+<div class="notificacion-container">
+  {#each notificaciones as noti, i (i)}
+    <div 
+      class="notificacion"
+      in:fly="{{ x: 250, duration: 400 }}" 
+      out:fly="{{ x: 250, duration: 400 }}"
+    >
+      {noti.mensaje}
+      <button on:click={() => cerrarNotificacion(noti.id)}>✖</button>
+    </div>
+  {/each}
+</div>
 
-      <!-- Barra de progreso -->
-      <div class="mb-4">
-        <h5 class="text-center mb-2">Progreso calórico del día</h5>
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-muted">Consumidas: <strong>{caloriasConsumidas}</strong> kcal</span>
-          <span class="text-muted">Meta: <strong>{caloriasSugeridas}</strong> kcal</span>
-        </div>
-        <div class="progress bg-light rounded-pill" style="height: 20px">
-          <div
-            class="progress-bar {colorBarra} progress-bar-striped"
-            role="progressbar"
-            style="width: {porcentajeConsumo}%"
-            aria-valuenow={porcentajeConsumo}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          >
-          </div>
-        </div>
-        {#if porcentajeConsumo > 100}
-          <small class="text-danger">¡Has superado tu meta calórica diaria!</small>
-        {/if}
+
+<div class="contenido-card card shadow-lg rounded-4">
+  <div class="contenido-scroll p-4">
+    <h2 class="card-header fw-bold mb-4 text-center">Dashboard de hoy 🌞</h2>
+
+    {#if error}
+      <div class="alert alert-danger" role="alert">
+        {error}
+        <button class="btn btn-sm btn-outline-danger ms-2" on:click={cargarAlimentosRegistrados}>
+          Reintentar
+        </button>
       </div>
+    {/if}
 
-      <!-- Secciones -->
-      {#if cargando}
-        <div class="text-center my-5">
-          <div class="spinner-border text-warning" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-          <p class="mt-2">Cargando tus alimentos...</p>
+    <!-- Barra de progreso -->
+    <div class="mb-4">
+      <h5 class="text-center mb-2">Progreso calórico del día</h5>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted">Consumidas: <strong>{caloriasConsumidas}</strong> kcal</span>
+        <span class="text-muted">Meta: <strong>{caloriasSugeridas}</strong> kcal</span>
+      </div>
+      <div class="progress bg-light rounded-pill" style="height: 20px">
+        <div
+          class="progress-bar {colorBarra} progress-bar-striped"
+          role="progressbar"
+          style="width: {porcentajeConsumo}%"
+          aria-valuenow={porcentajeConsumo}
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
         </div>
-      {:else}
-        {#each secciones as seccion}
-          <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
-              <h5 class="mb-0 fw-bold">{seccion.nombre}</h5>
-              <span class="badge bg-secondary">{seccion.calorias} kcal</span>
-            </div>
-            <div class="card-body">
-              {#if seccion.alimentos.length === 0}
-                <p class="text-muted text-center py-3">
-                  <i class="bi bi-plate"></i>
-                  Aún no has registrado alimentos en esta sección.
-                </p>
-              {:else}
-                <div class="alimentos-lista">
-                  {#each seccion.alimentos as alimento, index}
-                    <div class="alimento-item py-2 px-3 mb-2 bg-light rounded">
+      </div>
+      {#if porcentajeConsumo > 100}
+        <small class="text-danger">¡Has superado tu meta calórica diaria!</small>
+      {/if}
+    </div>
+
+    <!-- Secciones -->
+    {#if cargando}
+      <div class="text-center my-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando tus alimentos...</p>
+      </div>
+    {:else}
+      {#each secciones as seccion (seccion.nombre)}
+        <div class="card mb-4 border-0 shadow-sm">
+          <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">{seccion.nombre}</h5>
+            <span class="badge bg-secondary">{seccion.calorias} kcal</span>
+          </div>
+          <div class="card-body">
+            {#if seccion.alimentos.length === 0}
+              <p class="text-muted text-center py-3">
+                <i class="bi bi-plate"></i>
+                Aún no has registrado alimentos en esta sección.
+              </p>
+            {:else}
+              <div class="alimentos-lista">
+                {#each seccion.alimentos as alimento, i (i)}
+                  <div class="alimento-item py-2 px-3 mb-2 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
                       <div>
                         <strong>{alimento.nombre_alimento}</strong>
                         <small class="text-muted d-block">
                           {alimento.cantidad || 1} {alimento.unidad || 'porción'} - {alimento.calorias} kcal
                         </small>
                       </div>
+                      <div class="ms-2">
+                        <button
+                          class="btn btn-sm btn-outline-primary me-1"
+                          title="Editar" on:click={() => abrirModalEditar(alimento, seccion)}
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-danger" 
+                          title="Eliminar"
+                          on:click={() => abrirModalEliminar(alimento, seccion)}
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
                     </div>
-                  {/each}
-                </div>
-              {/if}
-              
-              <button 
-                class="btn btn-outline-warning w-100 mt-3 fw-semibold" 
-                on:click={() => abrirModal(seccion)}
-              >
-                <i class="bi bi-plus-circle me-2"></i>
-                Agregar alimento
-              </button>
-            </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+            
+            <button 
+              class="btn btn-outline-warning w-100 mt-3 fw-semibold" 
+              on:click={() => abrirModal(seccion)}
+            >
+              <i class="bi bi-plus-circle me-2"></i>
+              Agregar alimento
+            </button>
           </div>
-        {/each}
-      {/if}
-    </div>
+        </div>
+      {/each}
+    {/if}
   </div>
+</div>
+
 
   {#if mostrarModal}
     <ModalAgregarAlimento
@@ -200,9 +339,26 @@
     />
   {/if}
 
+  {#if mostrarModalEliminar}
+    <ModalEliminarAlimento
+      alimento={alimentoAEliminar}
+      seccion={seccionAEliminar}
+      on:cancelar={cerrarModalEliminar}
+      on:confirmar={confirmarEliminar}
+    />
+  {/if}
+
+  {#if mostrarModalEditar}
+    <EditarAlimento
+      alimento={alimentoAEditar}
+      seccion={seccionAEditar}
+      on:cancelar={cerrarModalEditar}
+      on:guardar={confirmarEditar}
+    />
+  {/if}
 
 <style>
-  .dashboard-fondo {
+.dashboard-fondo {
     position: relative;
     background: 
       radial-gradient(circle at 20% 80%, rgba(255, 193, 7, 0.15) 0%, transparent 50%),
@@ -350,5 +506,35 @@
   
   .contenido-scroll::-webkit-scrollbar-thumb:hover {
     background: #e0a800;
+  }
+  /* ✅ Contenedor para las notificaciones que asegura que no se superpongan */
+  .notificacion-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex; /* ✅ Usar flexbox para apilar las notificaciones */
+    flex-direction: column; /* ✅ Apilarlas verticalmente */
+    gap: 10px; /* ✅ Agregar un espacio entre ellas */
+  }
+
+  /* ✅ Estilos de la notificación individual */
+  .notificacion {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #facc15;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: opacity 0.5s ease;
+  }
+
+  .notificacion button {
+    background: transparent;
+    border: none;
+    margin-left: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #92400e;
   }
 </style>

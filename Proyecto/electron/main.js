@@ -15,7 +15,9 @@ import {
   obtenerAlimentosFavoritos,
   registrarPeso,
   obtenerHistorialPeso,
-  obtenerAlimentosPorSeccion
+  obtenerAlimentosPorSeccion,
+  eliminarRegistroDieta,
+  editarRegistroDieta
 } from './usuarios.js';
 
 // Para __dirname en ES Modules
@@ -76,8 +78,22 @@ app.whenReady().then(() => {
   });
 
   // IPC: Guardar alimentos favoritos (masivo)
-  ipcMain.handle('guardar-alimentos-favoritos-masivo', async (event, usuarioId, alimentosIds) => {
+  // En tu archivo main.js, busca este bloque:
+// IPC: Guardar alimentos favoritos
+  ipcMain.handle('guardar-alimentos-favoritos', async (event, usuarioId, alimentosIds) => {
     return guardarAlimentosFavoritos(usuarioId, alimentosIds);
+  });
+
+  // Y reemplázalo por este código, que corrige ambos problemas:
+  // IPC: Guardar alimentos favoritos (versión masiva)
+  ipcMain.handle('guardar-alimentos-favoritos-masivo', async (event, usuarioId, alimentosIds) => {
+    try {
+      const res = await guardarAlimentosFavoritos(usuarioId, alimentosIds);
+      return res;
+    } catch (error) {
+      console.error("Error en guardar-alimentos-favoritos-masivo:", error);
+      return { success: false, mensaje: error.message };
+    }
   });
 
   // IPC: Verificar si el usuario ya tiene preferencias
@@ -91,8 +107,8 @@ app.whenReady().then(() => {
   });
 
   // IPC: Registrar comida diaria
-  ipcMain.handle('registrar-comida-diaria', async (event, usuarioId, nombreAlimento, calorias, seccion) => {
-    return registrarComidaDiaria(usuarioId, nombreAlimento, calorias, seccion);
+  ipcMain.handle('registrar-comida-diaria', async (event, usuarioId, nombreAlimento, gramos, calorias, seccion) => {
+    return registrarComidaDiaria(usuarioId, nombreAlimento, gramos, calorias, seccion);
   });
 
   // IPC: Obtener alimentos favoritos
@@ -114,7 +130,23 @@ app.whenReady().then(() => {
   ipcMain.handle('obtener-alimentos-por-seccion', async (event, usuarioId, seccion) => {
     return obtenerAlimentosPorSeccion(usuarioId, seccion);
   });
+
+  // IPC: Editar registro de dieta
+  ipcMain.handle('editarRegistroDieta', async (event, registroId, gramos, seccion) => {
+    return editarRegistroDieta(registroId, gramos, seccion);
+  });
+
+  // IPC: Eliminar registro de dieta
+  ipcMain.handle('eliminarRegistroDieta', async (event, registroId) => {
+  return eliminarRegistroDieta(registroId);
+  });
+  // En tu archivo main.js, añade esto junto a los demás ipcMain.handle
+    ipcMain.handle('obtener-todos-los-alimentos', async (event) => {
+      return obtenerTodosLosAlimentos();
+    });
 });
+
+
 
 // Cierre correcto de la aplicación
 app.on('window-all-closed', () => {

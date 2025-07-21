@@ -13,8 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   tienePreferencias: (userId) =>
     ipcRenderer.invoke('tiene-preferencias', userId),
 
-  registrarComidaDiaria: (usuarioId, nombreAlimento, calorias, seccion) =>
-    ipcRenderer.invoke('registrar-comida-diaria', usuarioId, nombreAlimento, calorias, seccion),
+  registrarComidaDiaria: (usuarioId, nombreAlimento, gramos, calorias, seccion) =>
+    ipcRenderer.invoke('registrar-comida-diaria', usuarioId, nombreAlimento, gramos, calorias, seccion),
 
   obtenerAlimentosFavoritos: (usuarioId) =>
     ipcRenderer.invoke('obtener-alimentos-favoritos', usuarioId),
@@ -26,7 +26,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('obtener-historial-peso', usuarioId),
 
   obtenerAlimentosPorSeccion: (usuarioId, seccion) =>
-    ipcRenderer.invoke('obtener-alimentos-por-seccion', usuarioId, seccion)
+    ipcRenderer.invoke('obtener-alimentos-por-seccion', usuarioId, seccion),
+
+  editarRegistroDieta: (registroId, gramos, seccion) =>
+    ipcRenderer.invoke('editarRegistroDieta', registroId, gramos, seccion),
+
+  eliminarRegistroDieta: (registroId) =>
+    ipcRenderer.invoke('eliminarRegistroDieta', registroId)
 });
 
 console.log('[preload.js] `electronAPI` expuesto al entorno de renderizado.');
