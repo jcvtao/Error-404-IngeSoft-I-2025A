@@ -1,14 +1,28 @@
 <script>
   import { onMount } from 'svelte';
+  // ✅ Importar el nuevo componente del modal
+  import ModalEditarFavoritos from './ModalEditarFavoritos.svelte'; 
   export let usuarioActual;
 
   let pesoActual = '';
   let historial = [];
   let imcActual = '';
   let mensaje = '';
+  let mostrarModalFavoritos = false;
+  // ✅ Nueva variable para almacenar los alimentos favoritos
+  let alimentosFavoritos = []; 
 
   async function cargarHistorial() {
     historial = await window.electronAPI.obtenerHistorialPeso(usuarioActual.id) || [];
+  }
+  
+  // ✅ Nueva función para cargar los alimentos favoritos
+  async function cargarAlimentosFavoritos() {
+    try {
+      alimentosFavoritos = await window.electronAPI.obtenerAlimentosFavoritos(usuarioActual.id) || [];
+    } catch (e) {
+      console.error("Error al cargar alimentos favoritos:", e);
+    }
   }
 
   function calcularIMC(peso, altura) {
@@ -36,15 +50,35 @@
       mensaje = 'Error al registrar peso';
     }
   }
+  
+  function abrirModalFavoritos() {
+    mostrarModalFavoritos = true;
+  }
 
-  onMount(cargarHistorial);
+  // ✅ Función para cerrar el modal y recargar la lista de favoritos actualizada
+  async function cerrarModalFavoritos() {
+    mostrarModalFavoritos = false;
+    await cargarAlimentosFavoritos();
+  }
+
+  async function handleGuardado() {
+    // ✅ Recarga los alimentos favoritos desde la base de datos
+    await cargarAlimentosFavoritos();
+    // ✅ Oculta el modal una vez que los datos se han actualizado
+    mostrarModalFavoritos = false;
+  }
+
+  // ✅ Asegúrate de llamar a esta función en el onMount para cargar los datos al inicio
+  onMount(() => {
+    cargarHistorial();
+    cargarAlimentosFavoritos();
+  });
 
   $: ultimoRegistro = historial[historial.length - 1];
   $: categoriaIMC = ultimoRegistro ? obtenerCategoriaIMC(ultimoRegistro.imc) : null;
 </script>
 
 <div class="contenedor card mt-4 mb-4 shadow-lg rounded-4">
-  <!-- Header con estadísticas principales -->
   <div class="header-stats">
     <div class="stat-card peso-actual">
       <div class="stat-icon">⚖️</div>
@@ -72,7 +106,6 @@
     </div>
   </div>
 
-  <!-- Formulario de registro -->
   <div class="registro-card">
     <h3 class="section-title">Registrar nuevo peso</h3>
     
@@ -114,14 +147,12 @@
     {/if}
   </div>
 
-  <!-- Gráfica -->
   {#if historial.length > 0}
     <div class="grafica-card">
       <h3 class="section-title">Evolución de peso</h3>
       
       <div class="grafica-container">
         <svg width="100%" height="200" viewBox="0 0 600 200">
-          <!-- Grid lines -->
           {#each Array.from({ length: 9 }, (_, i) => 40 + i * 10) as peso}
             <line
               x1="50"
@@ -134,7 +165,6 @@
             <text x="10" y={183 - (peso - 40) * 1.5} class="grid-label">{peso}</text>
           {/each}
 
-          <!-- Data line -->
           {#if historial.length > 1}
             <path
               d="M {historial.map((entry, i) => 
@@ -147,7 +177,6 @@
             />
           {/if}
 
-          <!-- Data points -->
           {#each historial as entry, i}
             <circle
               cx={historial.length === 1 ? 300 : 50 + (i / (historial.length - 1)) * 530}
@@ -172,7 +201,6 @@
     </div>
   {/if}
 
-  <!-- Historial -->
   {#if historial.length > 0}
     <div class="historial-card">
       <h2 class="section-title">Historial</h2>
@@ -204,7 +232,26 @@
       <p>Comienza registrando tu primer peso para ver tu evolución</p>
     </div>
   {/if}
+  <div class="gestion-favoritos-card">
+    <h3 class="section-title">Gestionar alimentos favoritos</h3>
+    <p class="section-description">
+      Edita o elimina los alimentos que agregaste al registrarte.
+    </p>
+    <button class="btn-gestionar" on:click={abrirModalFavoritos}>
+      <span class="btn-icon">⭐</span>
+      Administrar favoritos
+    </button>
+  </div>
 </div>
+
+{#if mostrarModalFavoritos}
+  <ModalEditarFavoritos
+    usuarioActual={usuarioActual}
+    alimentosFavoritos={alimentosFavoritos}
+    on:cerrar={() => { mostrarModalFavoritos = false; }}
+    on:guardado={handleGuardado}
+  />
+{/if}
 
 <style>
   .contenedor {
@@ -543,5 +590,44 @@
       gap: 0.5rem;
       text-align: center;
     }
+  }
+
+  .gestion-favoritos-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    text-align: center;
+  }
+
+  .gestion-favoritos-card .section-description {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-gestionar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: #ffc107;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-gestionar:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  }
+
+  .btn-gestionar .btn-icon {
+    font-size: 1.2rem;
   }
 </style>
