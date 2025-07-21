@@ -9,5 +9,8 @@ dist/
 *.log
 .DS_Store
 
-# ignore ALL files in ANY directory named temp and ALL .temp files
+# Ignore release files
+release/
+
+# Ignore ALL files in ANY directory named temp and ALL .temp files
 temp/

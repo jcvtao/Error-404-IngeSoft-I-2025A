@@ -3,7 +3,7 @@ setlocal
 
 REM --- 1. Verificación de Dependencias del Sistema ---
 echo.
-echo (1/4) Verificando dependencias minimas (Node.js y NPM)
+echo (1/5) Verificando dependencias minimas (Node.js y NPM)
 node -v >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Node.js no esta instalado o no se encuentra en el PATH.
@@ -20,7 +20,7 @@ echo [OK] Node.js y NPM encontrados.
 
 REM --- 2. Instalacion de Dependencias del Proyecto ---
 echo.
-echo (2/4) Instalando dependencias del proyecto via npm...
+echo (2/5) Instalando dependencias del proyecto via npm...
 CALL npm install
 if %errorlevel% neq 0 (
     echo [ERROR] La instalacion de dependencias fallo.
@@ -29,7 +29,7 @@ if %errorlevel% neq 0 (
 
 REM --- 3. Reconstrucción modulos nativos para Electron ---
 echo.
-echo (3/4) Reconstruyendo modulos nativos para Electron...
+echo (3/5) Reconstruyendo modulos nativos para Electron...
 REM Se utiliza la carpeta local sobre npx electron-rebuild para evitar problemas con el script
 CALL .\\node_modules\\.bin\\electron-rebuild.cmd
 if %errorlevel% neq 0 (
@@ -40,10 +40,20 @@ if %errorlevel% neq 0 (
 )
 echo [OK] Reconstruccion de modulos nativos para Electron completada sin problemas.
 
-REM --- 4. Ejecucion del Proyecto en Modo Desarrollo ---
+REM --- 4. Instalación de Bootstrap Icons ---
+echo.
+echo (4/5) Instalando Bootstrap Icons...
+CALL npm install bootstrap-icons
+if %errorlevel% neq 0 (
+    echo [ERROR] La instalacion de Bootstrap Icons fallo.
+    exit /b 1
+)
+echo [OK] Bootstrap Icons instalados correctamente.
+
+REM --- 5. Ejecucion del Proyecto en Modo Desarrollo ---
 REM --- Incluye inicialización de la base de datos ---
 echo.
-echo (4/4) Ejecutando el proyecto en modo desarrollo...
+echo (5/5) Ejecutando el proyecto en modo desarrollo...
 CALL npm run electron-dev
 
 endlocal
